@@ -189,9 +189,9 @@ table.parts tr.nofit td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
 .del:hover { color: var(--bad); background: var(--bad-soft); }
 
 /* summary band */
-.band { display: flex; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden; }
-.stat { flex: 1 1 140px; display: grid; align-content: start; gap: 3px; padding: 12px 16px 14px; border-left: 1px solid var(--line); min-width: 0; }
-.stat:first-child { border-left: 0; }
+.band { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line); border: 1px solid var(--line); border-top: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden; }
+.stat { flex: 1 1 140px; display: grid; align-content: start; gap: 3px; padding: 12px 16px 14px; background: var(--panel); min-width: 0; }
+.stat.wide { flex-basis: 200px; }
 .stat .k { font: 600 11.5px/1.2 var(--font-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
 .stat .v { font: 700 34px/1.05 var(--font-display); font-variant-numeric: tabular-nums; }
 .stat .v small { font-size: 0.55em; color: var(--ink-3); font-weight: 600; margin-left: 3px; }
@@ -360,8 +360,13 @@ table.parts col.c-del { width: 30px; }
                   <span class="inp"><input id="allowH" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
               </div>
               <p class="hint">Use these when the template lists finished sizes and the flat blank still needs returns, hems or laps added.</p>
-              <label class="field" for="price"><span class="field-label">Price per sheet</span>
-                <span class="inp"><i class="u pre">$</i><input id="price" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="optional"></span></label>
+              <div class="row2 even">
+                <label class="field" for="price"><span class="field-label">Price per sheet</span>
+                  <span class="inp"><i class="u pre">$</i><input id="price" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="optional"></span></label>
+                <label class="field" for="priceArea"><span class="field-label" id="priceAreaLbl">Price per sq ft</span>
+                  <span class="inp"><i class="u pre">$</i><input id="priceArea" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="optional"></span></label>
+              </div>
+              <p class="hint">Price per square foot is charged on the full sheets bought, so the drop is included. The cost box also shows what the net part area alone would cost. Fill either price, or both to compare.</p>
             </div>
           </details>
         </div>
@@ -1039,7 +1044,7 @@ table.parts col.c-del { width: 30px; }
     in: [[96, 48, '4×8 ft'], [120, 48, '4×10 ft'], [144, 48, '4×12 ft'], [120, 60, '5×10 ft'], [144, 60, '5×12 ft']],
     mm: [[2440, 1220, '2440×1220'], [3050, 1220, '3050×1220'], [3660, 1220, '3660×1220'], [3050, 1525, '3050×1525']]
   };
-  var DEFAULTS = { units: 'in', sheetW: '120', sheetH: '48', rotation: '0', spacing: '0.25', margin: '0.5', mode: 'guillotine', tplUnits: 'in', allowW: '0', allowH: '0', price: '' };
+  var DEFAULTS = { units: 'in', sheetW: '120', sheetH: '48', rotation: '0', spacing: '0.25', margin: '0.5', mode: 'guillotine', tplUnits: 'in', allowW: '0', allowH: '0', price: '', priceArea: '' };
   var CHOICES = { units: ['in', 'mm'], rotation: ['0', '90', 'any'], mode: ['guillotine', 'free'], tplUnits: ['in', 'ft', 'mm', 'm'] };
 
   var S = Object.assign({}, DEFAULTS);
@@ -1065,6 +1070,13 @@ table.parts col.c-del { width: 30px; }
   function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
   function plural(n, one, many) { return n === 1 ? one : (many || one + 's'); }
   function unitMark() { return S.units === 'in' ? '"' : ' mm'; }
+  var SQFT_PER_M2 = 10.7639104;
+  function areaUnitOf(u) { return u === 'mm' ? 'm²' : 'sq ft'; }
+  function areaIn(a, u) { return u === 'mm' ? a / 1e6 : a / 144; }
+  function fmtArea(a, u) { return areaIn(a, u).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function round2(v) { return Math.round(v * 100) / 100; }
+  function fmtMoney(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
+  function fmtPrice(v) { return '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
   /* ---------- number parsing: decimals, fractions, feet-inches ---------- */
   function parseInches(s) {
@@ -1237,7 +1249,7 @@ table.parts col.c-del { width: 30px; }
       units: S.units, rotation: S.rotation, mode: S.mode,
       sheetW: parseNum(S.sheetW), sheetH: parseNum(S.sheetH),
       spacing: optNum(S.spacing), margin: optNum(S.margin),
-      allowW: optNum(S.allowW), allowH: optNum(S.allowH), price: optNum(S.price)
+      allowW: optNum(S.allowW), allowH: optNum(S.allowH), price: optNum(S.price), priceArea: optNum(S.priceArea)
     };
     var errs = [];
     if (!(st.sheetW > 0)) errs.push('Sheet width needs a number above 0.');
@@ -1246,6 +1258,7 @@ table.parts col.c-del { width: 30px; }
     if (!(st.margin >= 0)) errs.push('Sheet spacing needs a number (0 or more).');
     if (!(st.allowW >= 0) || !(st.allowH >= 0)) errs.push('Width and height allowances need numbers (0 or more).');
     if (!(st.price >= 0)) errs.push('Price per sheet needs a number.');
+    if (!(st.priceArea >= 0)) errs.push('Price per ' + areaUnitOf(st.units) + ' needs a number.');
     if (!errs.length && (st.sheetW - 2 * st.margin <= 0 || st.sheetH - 2 * st.margin <= 0)) errs.push('Sheet spacing leaves no usable area. Make it smaller than half the sheet.');
     st.errors = errs;
     return st;
@@ -1330,8 +1343,16 @@ table.parts col.c-del { width: 30px; }
       g.res.parts.forEach(function (info, k) { if (!info.fit) { t.notFit += info.count; t.notFitRows.push({ p: g.list[k], info: info }); } });
     });
     R.parsed.forEach(function (p) { if (p.issues.length) t.invalid.push(p); else t.requested += p.count; });
-    t.sheetArea = R.st.sheetW * R.st.sheetH;
-    t.yield = t.sheets ? t.partArea / (t.sheets * t.sheetArea) : 0;
+    var st = R.st, u = st.units;
+    t.sheetArea = st.sheetW * st.sheetH;
+    t.boughtArea = t.sheets * t.sheetArea;
+    t.drop = Math.max(0, t.boughtArea - t.partArea);
+    t.yield = t.sheets ? t.partArea / t.boughtArea : 0;
+    t.reqArea = 0;
+    R.parsed.forEach(function (p) { if (!p.issues.length) t.reqArea += p.count * (p.w + st.allowW) * (p.h + st.allowH); });
+    t.costSheet = st.price > 0 ? t.sheets * st.price : 0;
+    t.costArea = st.priceArea > 0 ? areaIn(t.boughtArea, u) * st.priceArea : 0;
+    t.costAreaNet = st.priceArea > 0 ? areaIn(t.partArea, u) * st.priceArea : 0;
     return t;
   }
   function rotLabel(v) { return v === 'any' ? 'any rotation' : v === '90' ? 'rotated 90°' : 'as drawn (0°)'; }
@@ -1364,15 +1385,22 @@ table.parts col.c-del { width: 30px; }
     var totalReq = T.requested;
     h += '<div class="stat"><span class="k">Pieces nested</span><span class="v">' + fmtInt(T.nested) + (T.nested !== totalReq ? '<small>/ ' + fmtInt(totalReq) + '</small>' : '') + '</span>' +
       '<span class="s">' + (T.notFit ? fmtInt(T.notFit) + ' ' + plural(T.notFit, 'piece') + ' don’t fit this sheet' : (totalReq ? 'Every piece fits' : 'No parts yet')) + '</span></div>';
+    var au = areaUnitOf(u);
+    h += '<div class="stat wide"><span class="k">Part area</span><span class="v">' + (T.nested ? fmtArea(T.partArea, u) + '<small>' + au + '</small>' : '—') + '</span>' +
+      '<span class="s">' + (T.sheets ? 'on ' + fmtArea(T.boughtArea, u) + ' ' + au + ' of sheet bought · ' + fmtArea(T.drop, u) + ' ' + au + ' drop' : 'Net area of the nested parts') + '</span></div>';
     h += '<div class="stat"><span class="k">Yield</span><span class="v">' + (T.sheets ? fmtPct(T.yield) : '—') + '</span>' +
-      '<span class="s">' + (T.sheets ? 'of ' + fmtInt(Math.round(T.sheets * T.sheetArea)) + ' sq ' + u + ' bought' : 'Part area ÷ sheet area') + '</span></div>';
+      '<span class="s">part area ÷ sheet area bought</span></div>';
     h += '<div class="stat"><span class="k">Lower bound</span><span class="v">' + (T.sheets ? fmtInt(T.lb) : '—') + '</span>' +
       '<span class="s">' + (!T.sheets ? 'No layout can use fewer sheets' : T.optimal ? '<span class="pill ok">Proven minimum</span>' : 'No layout can use fewer; best found is ' + (T.sheets - T.lb) + ' more') + '</span></div>';
     h += '<div class="stat"><span class="k">Cut separately</span><span class="v">' + (T.sheets ? fmtInt(T.separate) : '—') + '</span>' +
       '<span class="s">sheets if each panel gets its own sheets</span></div>';
     if (st.price > 0 && T.sheets) {
-      h += '<div class="stat"><span class="k">Material cost</span><span class="v">$' + fmtInt(Math.round(T.sheets * st.price)) + '</span>' +
-        '<span class="s">at $' + esc(fmt(st.price, 2)) + ' per sheet</span></div>';
+      h += '<div class="stat wide"><span class="k">Cost by sheet</span><span class="v">' + fmtMoney(T.costSheet) + '</span>' +
+        '<span class="s">' + fmtInt(T.sheets) + ' ' + plural(T.sheets, 'sheet') + ' × ' + fmtPrice(st.price) + '</span></div>';
+    }
+    if (st.priceArea > 0 && T.sheets) {
+      h += '<div class="stat wide"><span class="k">Cost by ' + au + '</span><span class="v">' + fmtMoney(T.costArea) + '</span>' +
+        '<span class="s">' + fmtArea(T.boughtArea, u) + ' ' + au + ' of sheet × ' + fmtPrice(st.priceArea) + ' · net part area alone ' + fmtMoney(T.costAreaNet) + '</span></div>';
     }
     $('#band').innerHTML = h;
   }
@@ -1414,9 +1442,12 @@ table.parts col.c-del { width: 30px; }
     var card = $('#matCard');
     if (!(hasMaterial && R.groups.length)) { card.hidden = true; return; }
     card.hidden = false;
-    var h = '<thead><tr><th>Material</th><th class="num">Pieces</th><th class="num">Sheets</th><th class="num">Yield</th><th class="num">Lower bound</th></tr></thead><tbody>';
+    var u = R.st.units, au = areaUnitOf(u), shA = R.st.sheetW * R.st.sheetH;
+    var h = '<thead><tr><th>Material</th><th class="num">Pieces</th><th class="num">Sheets</th><th class="num">Part area (' + au + ')</th><th class="num">Sheet area (' + au + ')</th><th class="num">Yield</th><th class="num">Lower bound</th></tr></thead><tbody>';
     R.groups.forEach(function (g) {
-      h += '<tr><td class="name">' + esc(g.material) + '</td><td class="num">' + fmtInt(g.res.nested) + '</td><td class="num">' + fmtInt(g.res.sheetCount) + '</td><td class="num">' + (g.res.sheetCount ? fmtPct(g.res.yield) : '—') + '</td><td class="num">' + fmtInt(g.res.lowerBound) + '</td></tr>';
+      h += '<tr><td class="name">' + esc(g.material) + '</td><td class="num">' + fmtInt(g.res.nested) + '</td><td class="num">' + fmtInt(g.res.sheetCount) + '</td>' +
+        '<td class="num">' + fmtArea(g.res.partArea, u) + '</td><td class="num">' + fmtArea(g.res.sheetCount * shA, u) + '</td>' +
+        '<td class="num">' + (g.res.sheetCount ? fmtPct(g.res.yield) : '—') + '</td><td class="num">' + fmtInt(g.res.lowerBound) + '</td></tr>';
     });
     $('#matTable').innerHTML = h + '</tbody>';
   }
@@ -1426,8 +1457,8 @@ table.parts col.c-del { width: 30px; }
     return m;
   }
   function renderPanelTable(R) {
-    var st = R.st, u = st.units, mat = hasMaterial, map = infoMap(R);
-    var h = '<thead><tr><th>Panel</th>' + (mat ? '<th>Material</th>' : '') + '<th class="num">Width (' + u + ')</th><th class="num">Height (' + u + ')</th><th class="num">Qty</th><th class="num">Fits per sheet</th><th class="num">Sheets if alone</th><th>Status</th><th><span class="sr">Layout</span></th></tr></thead><tbody>';
+    var st = R.st, u = st.units, au = areaUnitOf(u), mat = hasMaterial, map = infoMap(R), areaSum = 0;
+    var h = '<thead><tr><th>Panel</th>' + (mat ? '<th>Material</th>' : '') + '<th class="num">Width (' + u + ')</th><th class="num">Height (' + u + ')</th><th class="num">Qty</th><th class="num">Area (' + au + ')</th><th class="num">Fits per sheet</th><th class="num">Sheets if alone</th><th>Status</th><th><span class="sr">Layout</span></th></tr></thead><tbody>';
     var qty = 0, alone = 0;
     R.parsed.forEach(function (p) {
       var e = map.get(p.i), fits = '', al = '', status, view = '';
@@ -1444,11 +1475,13 @@ table.parts col.c-del { width: 30px; }
         status = e.info.fitsIfRotated ? '<span class="pill warn">Fits if rotated</span>' : '<span class="pill bad">Too big</span>';
       } else status = '';
       var w = p.issues.length && p.bad.width ? '—' : fmt(p.w + st.allowW), hh = p.issues.length && p.bad.height ? '—' : fmt(p.h + st.allowH);
+      var ar = '';
+      if (!p.issues.length) { var rowArea = p.count * (p.w + st.allowW) * (p.h + st.allowH); areaSum += rowArea; ar = fmtArea(rowArea, u); }
       h += '<tr><td class="name">' + esc(p.name) + '</td>' + (mat ? '<td>' + esc(p.material) + '</td>' : '') +
-        '<td class="num">' + w + '</td><td class="num">' + hh + '</td><td class="num">' + (isFinite(p.count) ? fmtInt(p.count) : '—') + '</td>' +
+        '<td class="num">' + w + '</td><td class="num">' + hh + '</td><td class="num">' + (isFinite(p.count) ? fmtInt(p.count) : '—') + '</td><td class="num">' + ar + '</td>' +
         '<td class="num">' + fits + '</td><td class="num">' + al + '</td><td>' + status + '</td><td>' + view + '</td></tr>';
     });
-    h += '</tbody><tfoot><tr><td>Total</td>' + (mat ? '<td></td>' : '') + '<td></td><td></td><td class="num">' + fmtInt(qty) + '</td><td></td><td class="num">' + fmtInt(alone) + '</td><td colspan="2"></td></tr></tfoot>';
+    h += '</tbody><tfoot><tr><td>Total</td>' + (mat ? '<td></td>' : '') + '<td></td><td></td><td class="num">' + fmtInt(qty) + '</td><td class="num">' + fmtArea(areaSum, u) + '</td><td></td><td class="num">' + fmtInt(alone) + '</td><td colspan="2"></td></tr></tfoot>';
     $('#panelTable').innerHTML = h;
   }
 
@@ -1621,7 +1654,7 @@ table.parts col.c-del { width: 30px; }
   }
 
   /* ---------- settings UI ---------- */
-  var NUM_IDS = ['sheetW', 'sheetH', 'spacing', 'margin', 'allowW', 'allowH', 'price'];
+  var NUM_IDS = ['sheetW', 'sheetH', 'spacing', 'margin', 'allowW', 'allowH', 'price', 'priceArea'];
   function syncSeg(seg, v) { $$('button[data-v]', seg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === v)); }); }
   function syncHints() {
     $('#rotHint').textContent = S.rotation === 'any'
@@ -1638,8 +1671,9 @@ table.parts col.c-del { width: 30px; }
       h += '<button type="button" class="chip" data-w="' + p[0] + '" data-h="' + p[1] + '" aria-pressed="' + on + '" title="' + p[0] + ' × ' + p[1] + ' ' + S.units + '">' + p[2] + '</button>';
     });
     $('#presets').innerHTML = h;
+    $('#priceAreaLbl').textContent = 'Price per ' + areaUnitOf(S.units);
     NUM_IDS.forEach(function (id) {
-      var el = $('#' + id), v = id === 'price' || id === 'allowW' || id === 'allowH' || id === 'spacing' || id === 'margin' ? optNum(S[id]) : parseNum(S[id]);
+      var el = $('#' + id), v = id === 'sheetW' || id === 'sheetH' ? parseNum(S[id]) : optNum(S[id]);
       var ok = id === 'sheetW' || id === 'sheetH' ? v > 0 : v >= 0;
       el.closest('.inp').classList.toggle('bad', !ok);
       el.setAttribute('aria-invalid', ok ? 'false' : 'true');
@@ -1651,6 +1685,8 @@ table.parts col.c-del { width: 30px; }
       var v = parseNum(S[id]);
       if (isFinite(v)) { S[id] = fmt(v * f, d); $('#' + id).value = S[id]; }
     });
+    var pa = parseNum(S.priceArea);
+    if (isFinite(pa)) { S.priceArea = fmt(to === 'mm' ? pa * SQFT_PER_M2 : pa / SQFT_PER_M2, 2); $('#priceArea').value = S.priceArea; }
   }
   function bindSettings() {
     NUM_IDS.forEach(function (id) {
@@ -1806,7 +1842,8 @@ table.parts col.c-del { width: 30px; }
   function tsv(rowsArr) { return rowsArr.map(function (r) { return r.map(function (c) { return String(c == null ? '' : c).replace(/[\t\r\n]+/g, ' '); }).join('\t'); }).join('\r\n'); }
   function panelRows() {
     var R = lastResult, st = R.st, map = infoMap(R), out = [];
-    out.push(['Panel'].concat(hasMaterial ? ['Material'] : [], ['Count', 'Width (' + st.units + ')', 'Height (' + st.units + ')', 'Fits per sheet', 'As drawn', 'Rotated', 'Sheets if alone', 'Status']));
+    var au = areaUnitOf(st.units);
+    out.push(['Panel'].concat(hasMaterial ? ['Material'] : [], ['Count', 'Width (' + st.units + ')', 'Height (' + st.units + ')', 'Area (' + au + ')', 'Fits per sheet', 'As drawn', 'Rotated', 'Sheets if alone', 'Status']));
     R.parsed.forEach(function (p) {
       var e = map.get(p.i), status;
       if (p.issues.length) status = 'Skipped: ' + p.issues.join(', ');
@@ -1815,6 +1852,7 @@ table.parts col.c-del { width: 30px; }
       else status = e && e.info.fitsIfRotated ? 'Too big as drawn; fits if rotated' : 'Too big for sheet';
       var fit = e && e.info.fit;
       out.push([p.name].concat(hasMaterial ? [p.material] : [], [isFinite(p.count) ? p.count : '', isFinite(p.w) ? +fmt(p.w + st.allowW) : '', isFinite(p.h) ? +fmt(p.h + st.allowH) : '',
+        p.issues.length ? '' : round2(areaIn(p.count * (p.w + st.allowW) * (p.h + st.allowH), st.units)),
         fit ? e.info.cap : '', fit ? e.info.n0 : '', fit ? e.info.n90 : '', fit ? e.info.sheetsAlone : '', status]));
     });
     return out;
@@ -1931,12 +1969,20 @@ table.parts col.c-del { width: 30px; }
         ['Pieces nested', T.nested],
         ['Pieces that don’t fit the sheet', T.notFit],
         ['Rows skipped (bad data)', T.invalid.length],
+        ['Part area (nested parts)', round2(areaIn(T.partArea, st.units)), areaUnitOf(st.units)],
+        ['Sheet area bought', round2(areaIn(T.boughtArea, st.units)), areaUnitOf(st.units)],
+        ['Drop (sheet area not used)', round2(areaIn(T.drop, st.units)), areaUnitOf(st.units)],
+        ['Area of all parts in the list', round2(areaIn(T.reqArea, st.units)), areaUnitOf(st.units)],
         ['Yield', +(T.yield * 100).toFixed(1), '%']
       ];
-      if (st.price > 0) summary.push(['Price per sheet', st.price, '$'], ['Material cost', +(T.sheets * st.price).toFixed(2), '$']);
+      if (st.price > 0) summary.push([], ['Price per sheet', st.price, '$'], ['Cost by sheet', round2(T.costSheet), '$']);
+      if (st.priceArea > 0) summary.push([], ['Price per ' + areaUnitOf(st.units), st.priceArea, '$'],
+        ['Cost by ' + areaUnitOf(st.units) + ' (sheet area bought)', round2(T.costArea), '$'],
+        ['Cost by ' + areaUnitOf(st.units) + ' (net part area only)', round2(T.costAreaNet), '$']);
       if (hasMaterial) {
-        summary.push([], ['Material', 'Pieces', 'Sheets', 'Yield %']);
-        R.groups.forEach(function (g) { summary.push([g.material, g.res.nested, g.res.sheetCount, +(g.res.yield * 100).toFixed(1)]); });
+        var shA = st.sheetW * st.sheetH;
+        summary.push([], ['Material', 'Pieces', 'Sheets', 'Part area (' + areaUnitOf(st.units) + ')', 'Sheet area (' + areaUnitOf(st.units) + ')', 'Yield %']);
+        R.groups.forEach(function (g) { summary.push([g.material, g.res.nested, g.res.sheetCount, round2(areaIn(g.res.partArea, st.units)), round2(areaIn(g.res.sheetCount * shA, st.units)), +(g.res.yield * 100).toFixed(1)]); });
       }
       var wb = XLSX.utils.book_new();
       function add(name, aoa, widths) {
@@ -1944,8 +1990,8 @@ table.parts col.c-del { width: 30px; }
         if (widths) ws['!cols'] = widths.map(function (w) { return { wch: w }; });
         XLSX.utils.book_append_sheet(wb, ws, name);
       }
-      add('Summary', summary, [38, 22, 6]);
-      add('Fit per sheet', panelRows(), [16, 10, 12, 12, 14, 10, 10, 14, 30]);
+      add('Summary', summary, [40, 16, 16, 16, 16, 10]);
+      add('Fit per sheet', panelRows(), [16, 10, 12, 12, 12, 14, 10, 10, 14, 30]);
       add('Cut list', cutRows(false), [8, 16, 12, 12, 12, 9]);
       add('Positions', cutRows(true), [8, 16, 10, 10, 12, 12, 9]);
       var buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
