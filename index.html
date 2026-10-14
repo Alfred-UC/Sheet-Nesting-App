@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sheet counts and cut layouts for flashing and panel blanks: upload a parts list, set the sheet, get fits per sheet, total sheets and cut layouts.">
+<meta name="theme-color" content="#e6e9ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1215" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nesting">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2042%2042'%3E%3Crect%20x%3D'2'%20y%3D'8'%20width%3D'38'%20height%3D'26'%20rx%3D'1.5'%20fill%3D'%23d5dbe1'%20stroke%3D'%2314191e'%20stroke-width%3D'1.6'%2F%3E%3Crect%20x%3D'6'%20y%3D'12'%20width%3D'21'%20height%3D'7'%20fill%3D'%232343b5'%2F%3E%3Crect%20x%3D'29'%20y%3D'12'%20width%3D'7'%20height%3D'18'%20fill%3D'%23485360'%2F%3E%3Crect%20x%3D'6'%20y%3D'21'%20width%3D'12'%20height%3D'9'%20fill%3D'%23697581'%2F%3E%3Crect%20x%3D'20'%20y%3D'21'%20width%3D'7'%20height%3D'9'%20fill%3D'%232343b5'%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABu0lEQVR42u3cIQ6CYBiAYXEcgULhBF4BuIFnMDmDzWJzNovN4EyewRsAV/BANBNIARH2PBEZzn/vvn+DYRDFyQKaLC0B4kAciANxIA7EgTgQB+JAHCAOxIE4EAfiQByIA3EgDsQB4kAciANxIA7EgTgQB+JAHCAOxIE4EAe/EHaeUZSVZZqlPEtNDmwriANxIA7EgTgQB+JAHCAOxIE4EAfjCfu93Hr3tqYfr/uq8fjheBroG6+Xs8mBbQVxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcdCu57fs294rx+RAHIgDcYA4EAfiQByMp+ebYLfH8z9/5367aftouL/HnPotQZMDcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EwdQEUZx8P6MoK8s0S3mWmhzYVhAH4kAciANxIA7EgThAHIgDcSAOxtP9yB6TA8SBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgTgQB4gDcSAOhlQDarwVxQ9Z7KoAAAAASUVORK5CYII=">
+<title>Nesting App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: shop-ticket workbench. Job inputs (sheet + parts) on the left, counts and drawn cut sheets on the right; one column under 1000px. */
+:root {
+  --bg: #e6e9ec;
+  --panel: #f7f8f9;
+  --inset: #eef1f3;
+  --field: #ffffff;
+  --ink: #14191e;
+  --ink-2: #485360;
+  --ink-3: #697581;
+  --line: #d2d8dd;
+  --line-2: #a8b2bc;
+  --accent: #2343b5;
+  --accent-ink: #ffffff;
+  --accent-soft: #dfe5f9;
+  --sheet: #d5dbe1;
+  --sheet-edge: #85909b;
+  --hatch: #9aa5b0;
+  --ok: #17734a; --ok-soft: #d9eee2;
+  --warn: #965200; --warn-soft: #f7e8d1;
+  --bad: #ae271e; --bad-soft: #f7dedb;
+  --scrim: rgba(17, 22, 27, 0.48);
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1215; --panel: #161b20; --inset: #1c2228; --field: #0f1418;
+    --ink: #e4e8ec; --ink-2: #a6b0ba; --ink-3: #7f8a95; --line: #29313a; --line-2: #3d4752;
+    --accent: #86a0ff; --accent-ink: #0a1022; --accent-soft: #1d2748;
+    --sheet: #2a3139; --sheet-edge: #66727e; --hatch: #4a5561;
+    --ok: #5cc592; --ok-soft: #13291f; --warn: #e6a446; --warn-soft: #2c2214; --bad: #f2837a; --bad-soft: #2f1816;
+    --scrim: rgba(0, 0, 0, 0.62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1215; --panel: #161b20; --inset: #1c2228; --field: #0f1418;
+  --ink: #e4e8ec; --ink-2: #a6b0ba; --ink-3: #7f8a95; --line: #29313a; --line-2: #3d4752;
+  --accent: #86a0ff; --accent-ink: #0a1022; --accent-soft: #1d2748;
+  --sheet: #2a3139; --sheet-edge: #66727e; --hatch: #4a5561;
+  --ok: #5cc592; --ok-soft: #13291f; --warn: #e6a446; --warn-soft: #2c2214; --bad: #f2837a; --bad-soft: #2f1816;
+  --scrim: rgba(0, 0, 0, 0.62);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app { max-width: 1500px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 56px; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mark { width: 42px; height: 42px; flex: none; }
+.mark .m-sheet { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.6; }
+.mark .m-a { fill: var(--accent); }
+.mark .m-b { fill: var(--ink-2); }
+.mark .m-c { fill: var(--ink-3); }
+h1 { font-size: 36px; font-weight: 700; line-height: 1; letter-spacing: 0.005em; }
+.sub { margin-top: 4px; color: var(--ink-2); font-size: 15px; }
+.runline { display: inline-flex; align-items: center; gap: 8px; font: 12.5px/1.3 var(--font-mono); color: var(--ink-2); min-width: 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.runline[data-state="busy"] .dot { background: var(--accent); animation: pulse 0.9s ease-in-out infinite; }
+.runline[data-state="done"] .dot { background: var(--ok); }
+.runline[data-state="error"] .dot { background: var(--bad); }
+@keyframes pulse { 50% { opacity: 0.2; } }
+
+/* workbench */
+.bench { display: grid; grid-template-columns: minmax(320px, 410px) minmax(0, 1fr); gap: 20px; margin-top: 18px; align-items: start; }
+@media (max-width: 1000px) {
+  .bench { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  /* answer first on narrow screens: the sheet count sits above the inputs */
+  .bench > .results { display: contents; }
+  .bench > .results > .band { order: -1; }
+  .bench > .results > :not(.band) { order: 1; }
+}
+.ticket, .results { display: grid; gap: 16px; min-width: 0; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); min-height: 48px; }
+.card-head h2, .section-head h2 { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; }
+.card-body { display: grid; gap: 14px; padding: 14px; }
+.card-body.tight { gap: 8px; padding-bottom: 12px; }
+.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+.card.dragging { outline: 2px dashed var(--accent); outline-offset: -6px; }
+
+/* form */
+.field { display: grid; gap: 5px; min-width: 0; }
+.field-label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: end; }
+.row2.even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.inp { display: flex; align-items: stretch; border: 1px solid var(--line-2); border-radius: 4px; background: var(--field); min-width: 0; }
+.inp:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.inp.bad { border-color: var(--bad); }
+.inp input, .inp select { flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; padding: 7px 8px; font: 500 15px/1.2 var(--font-mono); color: var(--ink); outline: none; }
+.inp select { font-family: var(--font-body); font-weight: 500; cursor: pointer; }
+.inp .u { display: grid; place-items: center; padding: 0 9px; color: var(--ink-3); font: 12px var(--font-mono); border-left: 1px solid var(--line); font-style: normal; flex: none; }
+.inp .u.pre { border-left: 0; border-right: 1px solid var(--line); }
+.hint { font-size: 13px; color: var(--ink-3); line-height: 1.4; }
+.swap { appearance: none; border: 1px solid var(--line-2); background: var(--field); color: var(--ink-2); border-radius: 4px; height: 35px; width: 34px; cursor: pointer; display: grid; place-items: center; }
+.swap:hover { color: var(--ink); border-color: var(--ink-3); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.presets .field-label { margin-right: 2px; }
+.chip { appearance: none; border: 1px solid var(--line-2); background: var(--field); color: var(--ink); font: 500 12.5px/1 var(--font-mono); padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+.chip:hover { border-color: var(--ink-3); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 5px; overflow: hidden; background: var(--field); max-width: 100%; }
+.seg.wide { display: flex; width: 100%; }
+.seg button { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: 600 14px/1 var(--font-body); padding: 9px 12px; cursor: pointer; flex: 1 1 auto; white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button:hover { color: var(--ink); background: var(--inset); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg.sm button { font-size: 12.5px; padding: 6px 9px; }
+
+details.adv { border-top: 1px solid var(--line); padding-top: 10px; }
+details.adv summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-2); list-style: none; display: flex; align-items: center; gap: 6px; }
+details.adv summary::-webkit-details-marker { display: none; }
+details.adv summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; }
+details.adv[open] summary::before { transform: rotate(45deg); }
+details.adv .adv-body { display: grid; gap: 12px; padding-top: 12px; }
+
+.btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font: 600 14px/1 var(--font-body); padding: 9px 13px; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn.ghost:hover { background: var(--inset); filter: none; }
+.btn.sm { padding: 6px 10px; font-size: 13px; }
+.btn[disabled] { opacity: 0.5; cursor: default; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.link { appearance: none; border: 0; background: none; color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; padding: 2px 4px; border-radius: 3px; }
+.link:hover { text-decoration: underline; }
+.file { font: 12.5px var(--font-mono); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* tables */
+.table-wrap { overflow: auto; min-width: 0; }
+.parts-wrap { max-height: 440px; border-top: 1px solid var(--line); }
+.res-wrap { max-height: 470px; }
+table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
+table.grid th { position: sticky; top: 0; z-index: 1; background: var(--inset); text-align: left; font: 600 11.5px/1.2 var(--font-body); text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.grid td { padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+table.grid tfoot td { position: sticky; bottom: 0; background: var(--inset); font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 0; }
+table.grid .num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.grid td.name { font-weight: 600; white-space: nowrap; }
+table.grid .dim-sub { color: var(--ink-3); font-size: 12px; }
+table.parts { table-layout: fixed; min-width: 330px; }
+table.parts th { padding: 7px 6px; }
+table.parts td { padding: 2px 3px; }
+table.parts td.idx { color: var(--ink-3); font-size: 12px; padding-right: 6px; }
+table.parts input { width: 100%; min-width: 0; border: 1px solid transparent; background: transparent; font: 13.5px/1.2 var(--font-mono); color: var(--ink); padding: 5px 5px; border-radius: 3px; }
+table.parts input.r { text-align: right; }
+table.parts input:hover { border-color: var(--line); }
+table.parts input:focus { border-color: var(--accent); background: var(--field); outline: none; }
+table.parts input.bad { color: var(--bad); border-color: var(--bad); }
+table.parts tr.bad td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+table.parts tr.nofit td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.del { appearance: none; border: 0; background: transparent; color: var(--ink-3); cursor: pointer; font-size: 17px; line-height: 1; padding: 4px 7px; border-radius: 3px; }
+.del:hover { color: var(--bad); background: var(--bad-soft); }
+
+/* summary band */
+.band { display: flex; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden; }
+.stat { flex: 1 1 140px; display: grid; align-content: start; gap: 3px; padding: 12px 16px 14px; border-left: 1px solid var(--line); min-width: 0; }
+.stat:first-child { border-left: 0; }
+.stat .k { font: 600 11.5px/1.2 var(--font-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
+.stat .v { font: 700 34px/1.05 var(--font-display); font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 0.55em; color: var(--ink-3); font-weight: 600; margin-left: 3px; }
+.stat .s { font-size: 13px; color: var(--ink-2); }
+.stat.hero { flex: 1.6 1 220px; background: var(--inset); }
+.stat.hero .v { font-size: 68px; color: var(--accent); letter-spacing: -0.01em; }
+
+.notices { display: grid; gap: 8px; }
+.notices:empty { display: none; }
+.notice { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--ink-3); border-radius: var(--radius); padding: 10px 14px; display: grid; gap: 4px; font-size: 14px; }
+.notice.bad { border-left-color: var(--bad); }
+.notice.warn { border-left-color: var(--warn); }
+.notice.info { border-left-color: var(--accent); }
+.notice .t { font-weight: 600; font-size: 15px; }
+.notice ul { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.notice code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+.pill { display: inline-flex; align-items: center; gap: 4px; font: 600 11.5px/1 var(--font-body); padding: 4px 8px; border-radius: 999px; background: var(--inset); color: var(--ink-2); white-space: nowrap; letter-spacing: 0.02em; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.accent { background: var(--accent-soft); color: var(--accent); }
+
+.section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding-top: 4px; }
+.head-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* cut layouts */
+.layouts { display: grid; gap: 14px; }
+.group-title { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; padding-top: 6px; }
+.sheet-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.sheet-card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+.sheet-card h3 { font-size: 21px; font-weight: 600; line-height: 1.1; }
+.sheet-card .meta { color: var(--ink-2); font: 13px var(--font-mono); }
+.sheet-card .zoom { margin-left: auto; }
+.drawing { overflow-x: auto; padding: 10px 14px 12px; }
+.drawing svg { display: block; }
+.sheet-card details { padding: 0 14px 12px; }
+.sheet-card summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.cutlist { margin-top: 6px; font: 12.5px/1.6 var(--font-mono); color: var(--ink-2); }
+.more { justify-self: start; }
+.empty { padding: 28px 18px; text-align: center; color: var(--ink-2); background: var(--panel); border: 1px dashed var(--line-2); border-radius: var(--radius); }
+
+.sheet-svg .sh { fill: var(--sheet); stroke: var(--sheet-edge); stroke-width: 1; }
+.sheet-svg .trim { fill: url(#hatch); }
+.sheet-svg .usable { fill: none; stroke: var(--sheet-edge); stroke-dasharray: 4 3; stroke-width: 1; }
+.sheet-svg .dim line { stroke: var(--ink-3); stroke-width: 1; }
+.sheet-svg .dim line.tick { stroke: var(--ink); stroke-width: 1.4; }
+.sheet-svg .dim text { fill: var(--ink-2); font: 500 11px var(--font-mono); }
+.sheet-svg .part rect { cursor: default; }
+.sheet-svg .part:hover rect { stroke: var(--ink); stroke-width: 1.5; }
+.sheet-svg .part text { fill: #11161b; font-family: var(--font-body); font-weight: 600; pointer-events: none; }
+.hatch-line { stroke: var(--hatch); stroke-width: 1.1; }
+
+/* modal + toast */
+.modal { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; width: min(1100px, 100%); max-height: 100%; overflow: auto; }
+.modal-card > header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.modal-card h3 { font-size: 22px; font-weight: 600; }
+.modal-card .zoom { margin-left: auto; }
+.modal-meta { padding: 10px 14px 0; color: var(--ink-2); font-size: 14px; }
+.icon-btn { appearance: none; border: 1px solid var(--line-2); background: var(--field); color: var(--ink); border-radius: 4px; width: 32px; height: 32px; font-size: 18px; line-height: 1; cursor: pointer; flex: none; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--panel); padding: 9px 14px; border-radius: 6px; font-size: 14px; z-index: 60; max-width: calc(100% - 32px); box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25); }
+
+@media (max-width: 560px) {
+  h1 { font-size: 30px; }
+  .stat .v { font-size: 30px; }
+  .stat.hero .v { font-size: 56px; }
+  .stat { padding: 10px 12px 12px; }
+}
+/* parts table column widths */
+table.parts col.c-idx { width: 30px; }
+table.parts col.c-qty { width: 46px; }
+table.parts col.c-dim { width: 80px; }
+table.parts col.c-mat { width: 86px; }
+table.parts col.c-del { width: 30px; }
+/* touch screens: 16px inputs so iPhone doesn't zoom in on every tap */
+@media (pointer: coarse) {
+  .inp input, .inp select, table.parts input { font-size: 16px; }
+  table.parts col.c-dim { width: 88px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line class="hatch-line" x1="0" y1="0" x2="0" y2="6"></line>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 42 42" aria-hidden="true">
+        <rect class="m-sheet" x="2" y="8" width="38" height="26" rx="1.5"></rect>
+        <rect class="m-a" x="6" y="12" width="21" height="7"></rect>
+        <rect class="m-b" x="29" y="12" width="7" height="18"></rect>
+        <rect class="m-c" x="6" y="21" width="12" height="9"></rect>
+        <rect class="m-a" x="20" y="21" width="7" height="9"></rect>
+      </svg>
+      <div>
+        <h1>Nesting App</h1>
+        <p class="sub">Sheet counts and cut layouts for flashing and panel blanks</p>
+      </div>
+    </div>
+    <div class="runline" id="runline" data-state="busy" aria-live="polite"><span class="dot"></span><span id="runText">Nesting…</span></div>
+  </header>
+
+  <main class="bench">
+    <section class="ticket" aria-label="Job inputs">
+      <div class="card" id="sheetCard">
+        <div class="card-head">
+          <h2>Sheet</h2>
+          <div class="seg sm" role="group" aria-label="Units" id="unitSeg">
+            <button type="button" data-v="in">in</button>
+            <button type="button" data-v="mm">mm</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="presets" id="presets"></div>
+          <div class="row2">
+            <label class="field" for="sheetW"><span class="field-label">Sheet width (X)</span>
+              <span class="inp"><input id="sheetW" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+            <button type="button" class="swap" id="swapSheet" title="Swap width and height" aria-label="Swap sheet width and height">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5h9.5M10 2.5 12.5 5 10 7.5M13 11H3.5M6 8.5 3.5 11 6 13.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <label class="field" for="sheetH"><span class="field-label">Sheet height (Y)</span>
+              <span class="inp"><input id="sheetH" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+          </div>
+          <div class="field">
+            <span class="field-label" id="rotLbl">Rotation</span>
+            <div class="seg wide" role="group" aria-labelledby="rotLbl" id="rotSeg">
+              <button type="button" data-v="0">0°</button>
+              <button type="button" data-v="90">90°</button>
+              <button type="button" data-v="any">Any</button>
+            </div>
+            <p class="hint" id="rotHint"></p>
+          </div>
+          <div class="row2 even">
+            <label class="field" for="spacing"><span class="field-label">Part spacing</span>
+              <span class="inp"><input id="spacing" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+            <label class="field" for="margin"><span class="field-label">Sheet spacing</span>
+              <span class="inp"><input id="margin" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+          </div>
+          <p class="hint">Part spacing is the gap between parts (saw kerf or router bit). Sheet spacing is the clear edge kept on all four sides of the sheet.</p>
+          <div class="field">
+            <span class="field-label" id="modeLbl">Cut method</span>
+            <div class="seg wide" role="group" aria-labelledby="modeLbl" id="modeSeg">
+              <button type="button" data-v="guillotine">Shear / saw</button>
+              <button type="button" data-v="free">CNC / router</button>
+            </div>
+            <p class="hint" id="modeHint"></p>
+          </div>
+          <details class="adv" id="adv">
+            <summary>More settings</summary>
+            <div class="adv-body">
+              <label class="field" for="tplUnits"><span class="field-label">Template values are in</span>
+                <span class="inp"><select id="tplUnits">
+                  <option value="in">inches</option>
+                  <option value="ft">feet</option>
+                  <option value="mm">millimeters</option>
+                  <option value="m">meters</option>
+                </select></span></label>
+              <div class="row2 even">
+                <label class="field" for="allowW"><span class="field-label">Add to part width</span>
+                  <span class="inp"><input id="allowW" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+                <label class="field" for="allowH"><span class="field-label">Add to part height</span>
+                  <span class="inp"><input id="allowH" inputmode="decimal" autocomplete="off" spellcheck="false"><i class="u">in</i></span></label>
+              </div>
+              <p class="hint">Use these when the template lists finished sizes and the flat blank still needs returns, hems or laps added.</p>
+              <label class="field" for="price"><span class="field-label">Price per sheet</span>
+                <span class="inp"><i class="u pre">$</i><input id="price" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="optional"></span></label>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="card" id="partsCard">
+        <div class="card-head">
+          <h2>Parts</h2>
+          <span class="file" id="fileName"></span>
+        </div>
+        <div class="card-body tight">
+          <div class="actions">
+            <button type="button" class="btn" id="uploadBtn">Upload CSV or Excel</button>
+            <button type="button" class="btn ghost" id="tplBtn" hidden>Download template</button>
+            <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden>
+          </div>
+          <p class="hint">Columns: Panel, Count, Width, Height, plus an optional Material column (parts with different materials never share a sheet). Drop a file on this card or paste rows copied from Excel.</p>
+        </div>
+        <div class="table-wrap parts-wrap"><table class="grid parts" id="partsTable"></table></div>
+        <div class="card-foot"><span id="partsSummary"></span><button type="button" class="btn ghost sm" id="addRow">Add part</button></div>
+      </div>
+    </section>
+
+    <section class="results" aria-label="Results">
+      <div class="band" id="band">
+        <div class="stat hero"><span class="k">Sheets needed</span><span class="v">—</span><span class="s">Nesting your parts…</span></div>
+      </div>
+      <div class="notices" id="notices"></div>
+      <div class="card" id="matCard" hidden>
+        <div class="card-head"><h2>By material</h2></div>
+        <div class="table-wrap"><table class="grid" id="matTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Fit per sheet</h2>
+          <div class="head-actions"><button type="button" class="btn ghost sm" id="copyPanels">Copy table</button></div>
+        </div>
+        <div class="table-wrap res-wrap"><table class="grid" id="panelTable"></table></div>
+      </div>
+      <div class="section-head">
+        <h2>Cut layouts</h2>
+        <div class="head-actions">
+          <button type="button" class="btn ghost sm" id="copyCut">Copy cut list</button>
+          <button type="button" class="btn sm" id="xlsxBtn" hidden>Download Excel</button>
+        </div>
+      </div>
+      <div class="layouts" id="layouts"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <header>
+      <h3 id="modalTitle"></h3>
+      <div class="seg sm zoom" role="group" aria-label="Zoom" id="modalZoom">
+        <button type="button" data-z="1">Fit</button><button type="button" data-z="2">2×</button><button type="button" data-z="4">4×</button>
+      </div>
+      <button type="button" class="icon-btn" id="modalClose" aria-label="Close">×</button>
+    </header>
+    <p class="modal-meta" id="modalMeta"></p>
+    <div class="drawing" id="modalDrawing"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* Nesting engine: rectangular parts on rectangular sheets.
+   Handles part spacing (kerf/gap), sheet edge spacing, rotation (0 / 90 / any)
+   and cut method (guillotine = straight edge-to-edge cuts for shears/saws,
+   free = CNC router/laser). All geometry runs on exact integers.
+
+   Spacing trick: every part is inflated by the part spacing on its right and
+   bottom edge, and the usable sheet (sheet minus 2x edge spacing) is inflated
+   by the same amount. Packing inflated rectangles with zero gap is then exactly
+   equivalent to packing real parts with the required gaps. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.NestEngine = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  /* ---------- exact integer scaling ---------- */
+  var DENOMS = [1, 2, 4, 8, 16, 32, 64, 5, 10, 20, 25, 40, 50, 80, 100, 125, 160, 200, 250, 320, 400, 500, 625, 1000, 1250, 2000, 2500, 5000, 10000];
+  function gcd(a, b) { while (b) { var t = a % b; a = b; b = t; } return a; }
+  function denomOf(v) {
+    v = Math.abs(v);
+    for (var i = 0; i < DENOMS.length; i++) {
+      var d = DENOMS[i], x = v * d, r = Math.round(x);
+      if (Math.abs(x - r) <= 1e-7 * Math.max(1, x)) return d;
+    }
+    return 0;
+  }
+  function chooseScale(values, maxDim) {
+    var cap = Math.max(1, 1e7 / Math.max(1, maxDim));
+    var s = 1;
+    for (var i = 0; i < values.length; i++) {
+      var d = denomOf(values[i]);
+      if (d === 0) { s = 0; break; }
+      s = s / gcd(s, d) * d;
+      if (s > cap) { s = 0; break; }
+    }
+    if (s === 0) { s = Math.pow(10, Math.floor(Math.log10(cap))); if (s > 10000) s = 10000; }
+    return s;
+  }
+
+  var OPS = 0;
+
+  /* ---------- MaxRects bin (free nesting) ---------- */
+  function MaxRects(W, H, T) {
+    this.W = W; this.H = H; this.free = [{ x: 0, y: 0, w: W, h: H }];
+    this.placed = []; this.area = 0; this.nofit = T ? new Uint8Array(T) : null;
+  }
+  MaxRects.prototype.find = function (os, heur) {
+    var fr = this.free, bi = -1, bk = -1, b1 = Infinity, b2 = Infinity;
+    OPS += fr.length * os.length;
+    for (var i = 0; i < fr.length; i++) {
+      var f = fr[i];
+      for (var k = 0; k < os.length; k++) {
+        var o = os[k];
+        if (o.w > f.w || o.h > f.h) continue;
+        var lw = f.w - o.w, lh = f.h - o.h, s1, s2;
+        if (heur === 0) { s1 = lw < lh ? lw : lh; s2 = lw < lh ? lh : lw; }          // best short side fit
+        else if (heur === 1) { s1 = lw < lh ? lh : lw; s2 = lw < lh ? lw : lh; }     // best long side fit
+        else if (heur === 2) { s1 = f.w * f.h - o.w * o.h; s2 = lw < lh ? lw : lh; } // best area fit
+        else { s1 = f.y + o.h; s2 = f.x; }                                          // top-left
+        if (s1 < b1 || (s1 === b1 && s2 < b2)) { b1 = s1; b2 = s2; bi = i; bk = k; }
+      }
+    }
+    if (bi < 0) return null;
+    var bf = fr[bi], bo = os[bk];
+    return { x: bf.x, y: bf.y, w: bo.w, h: bo.h, r: bo.r, fi: bi, s1: b1, s2: b2 };
+  };
+  MaxRects.prototype.place = function (n) {
+    var fr = this.free, kept = [], made = [];
+    var nx2 = n.x + n.w, ny2 = n.y + n.h, i, j;
+    for (i = 0; i < fr.length; i++) {
+      var f = fr[i], fx2 = f.x + f.w, fy2 = f.y + f.h;
+      if (n.x >= fx2 || nx2 <= f.x || n.y >= fy2 || ny2 <= f.y) { kept.push(f); continue; }
+      if (n.x > f.x) made.push({ x: f.x, y: f.y, w: n.x - f.x, h: f.h });
+      if (nx2 < fx2) made.push({ x: nx2, y: f.y, w: fx2 - nx2, h: f.h });
+      if (n.y > f.y) made.push({ x: f.x, y: f.y, w: f.w, h: n.y - f.y });
+      if (ny2 < fy2) made.push({ x: f.x, y: ny2, w: f.w, h: fy2 - ny2 });
+    }
+    var nk = kept.length;
+    for (i = 0; i < made.length; i++) {
+      var a = made[i], ax2 = a.x + a.w, ay2 = a.y + a.h, inside = false, b;
+      for (j = 0; j < nk; j++) { b = kept[j]; if (a.x >= b.x && a.y >= b.y && ax2 <= b.x + b.w && ay2 <= b.y + b.h) { inside = true; break; } }
+      if (!inside) for (j = 0; j < made.length; j++) {
+        if (j === i) continue;
+        b = made[j];
+        if (a.x >= b.x && a.y >= b.y && ax2 <= b.x + b.w && ay2 <= b.y + b.h) {
+          if (a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h) { if (j < i) { inside = true; break; } }
+          else { inside = true; break; }
+        }
+      }
+      if (!inside) kept.push(a);
+    }
+    OPS += made.length * (nk + made.length) + fr.length;
+    this.free = kept;
+    this.placed.push(n); this.area += n.w * n.h;
+  };
+
+  /* ---------- Guillotine bin (straight edge-to-edge cuts) ---------- */
+  function Guillo(W, H, T) {
+    this.W = W; this.H = H; this.free = [{ x: 0, y: 0, w: W, h: H }];
+    this.placed = []; this.area = 0; this.nofit = T ? new Uint8Array(T) : null;
+  }
+  Guillo.prototype.find = function (os, heur) {
+    var fr = this.free, bi = -1, bk = -1, b1 = Infinity, b2 = Infinity;
+    OPS += fr.length * os.length;
+    for (var i = 0; i < fr.length; i++) {
+      var f = fr[i];
+      for (var k = 0; k < os.length; k++) {
+        var o = os[k];
+        if (o.w > f.w || o.h > f.h) continue;
+        var lw = f.w - o.w, lh = f.h - o.h, s1, s2;
+        if (heur === 0) { s1 = f.w * f.h - o.w * o.h; s2 = lw < lh ? lw : lh; }      // best area fit
+        else if (heur === 1) { s1 = lw < lh ? lw : lh; s2 = lw < lh ? lh : lw; }     // best short side fit
+        else if (heur === 2) { s1 = lw < lh ? lh : lw; s2 = lw < lh ? lw : lh; }     // best long side fit
+        else { s1 = f.y + o.h; s2 = f.x; }                                          // top-left
+        if (s1 < b1 || (s1 === b1 && s2 < b2)) { b1 = s1; b2 = s2; bi = i; bk = k; }
+      }
+    }
+    if (bi < 0) return null;
+    var bf = fr[bi], bo = os[bk];
+    return { x: bf.x, y: bf.y, w: bo.w, h: bo.h, r: bo.r, fi: bi, s1: b1, s2: b2 };
+  };
+  Guillo.prototype.place = function (n, split) {
+    var fr = this.free, f = fr[n.fi];
+    fr[n.fi] = fr[fr.length - 1]; fr.pop();
+    var lw = f.w - n.w, lh = f.h - n.h, hz;
+    switch (split) {
+      case 0: hz = lw <= lh; break;                 // shorter leftover axis
+      case 1: hz = lw > lh; break;                  // longer leftover axis
+      case 2: hz = n.w * lh > lw * n.h; break;      // minimize area
+      case 3: hz = n.w * lh <= lw * n.h; break;     // maximize area
+      case 4: hz = f.w <= f.h; break;               // shorter axis
+      default: hz = f.w > f.h;                      // longer axis
+    }
+    var bw = hz ? f.w : n.w, rh = hz ? n.h : f.h;
+    if (lh > 0 && bw > 0) fr.push({ x: f.x, y: f.y + n.h, w: bw, h: lh });
+    if (lw > 0 && rh > 0) fr.push({ x: f.x + n.w, y: f.y, w: lw, h: rh });
+    OPS += 4;
+    this.placed.push(n); this.area += n.w * n.h;
+  };
+
+  function makeBin(mode, W, H, T) { return mode === 'free' ? new MaxRects(W, H, T) : new Guillo(W, H, T); }
+
+  /* ---------- block patterns for one part on one sheet ---------- */
+  // tree nodes: {k:'g', o} grid of orientation o | {k:'v', at, a, b} vertical cut | {k:'h', at, a, b} horizontal cut
+  function addFree(list, x, y, w, h) { if (list && w > 0 && h > 0) list.push({ x: x, y: y, w: w, h: h }); }
+  function buildTree(node, x0, y0, rw, rh, os, out, gfree) {
+    if (node.k === 'g') {
+      var o = os[node.o];
+      var cols = Math.floor(rw / o.w), rows = Math.floor(rh / o.h);
+      if (cols < 1 || rows < 1) { addFree(gfree, x0, y0, rw, rh); return; }
+      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) out.push({ x: x0 + c * o.w, y: y0 + r * o.h, w: o.w, h: o.h, r: o.r });
+      if (gfree) {
+        var uw = cols * o.w, uh = rows * o.h, rightW = rw - uw, botH = rh - uh;
+        var aMax = Math.max(rightW * rh, uw * botH), bMax = Math.max(rw * botH, rightW * uh);
+        if (aMax >= bMax) { addFree(gfree, x0 + uw, y0, rightW, rh); addFree(gfree, x0, y0 + uh, uw, botH); }
+        else { addFree(gfree, x0, y0 + uh, rw, botH); addFree(gfree, x0 + uw, y0, rightW, uh); }
+      }
+    } else if (node.k === 'v') {
+      buildTree(node.a, x0, y0, node.at, rh, os, out, gfree);
+      buildTree(node.b, x0 + node.at, y0, rw - node.at, rh, os, out, gfree);
+    } else {
+      buildTree(node.a, x0, y0, rw, node.at, os, out, gfree);
+      buildTree(node.b, x0, y0 + node.at, rw, rh - node.at, os, out, gfree);
+    }
+  }
+  function countTree(node, rw, rh, os) {
+    if (rw <= 0 || rh <= 0) return 0;
+    if (node.k === 'g') { var o = os[node.o]; return Math.floor(rw / o.w) * Math.floor(rh / o.h); }
+    if (node.k === 'v') return countTree(node.a, node.at, rh, os) + countTree(node.b, rw - node.at, rh, os);
+    return countTree(node.a, rw, node.at, os) + countTree(node.b, rw, rh - node.at, os);
+  }
+
+  // Two orientations: columns (or rows) of one orientation, the rest in the other,
+  // with each block's leftover strip refilled by the other orientation.
+  function fourBlockTree(W, H, os) {
+    var best = null, bestN = -1;
+    function consider(t) { var n = countTree(t, W, H, os); if (n > bestN) { bestN = n; best = t; } }
+    for (var ai = 0; ai < 2; ai++) {
+      var A = os[ai], bi = 1 - ai, B = os[bi], c, at;
+      var rowsA = Math.floor(H / A.h), rowsB = Math.floor(H / B.h);
+      var maxC = Math.floor(W / A.w);
+      for (c = 1; c <= maxC; c++) {
+        at = c * A.w;
+        consider({ k: 'v', at: at,
+          a: { k: 'h', at: rowsA * A.h, a: { k: 'g', o: ai }, b: { k: 'g', o: bi } },
+          b: { k: 'h', at: rowsB * B.h, a: { k: 'g', o: bi }, b: { k: 'g', o: ai } } });
+      }
+      var colsA = Math.floor(W / A.w), colsB = Math.floor(W / B.w);
+      var maxR = Math.floor(H / A.h);
+      for (c = 1; c <= maxR; c++) {
+        at = c * A.h;
+        consider({ k: 'h', at: at,
+          a: { k: 'v', at: colsA * A.w, a: { k: 'g', o: ai }, b: { k: 'g', o: bi } },
+          b: { k: 'v', at: colsB * B.w, a: { k: 'g', o: bi }, b: { k: 'g', o: ai } } });
+      }
+    }
+    return best;
+  }
+
+  // Exact best guillotine pattern for one part with both orientations (recursive
+  // partitioning over normal sets). Skipped when the sets get too large.
+  function normalSet(L, a, b) {
+    if ((L / a + 1) * (L / b + 1) > 3e6) return null;
+    var s = new Set();
+    for (var i = 0; i * a <= L; i++) { for (var v = i * a; v <= L; v += b) s.add(v); }
+    return Float64Array.from(s).sort();
+  }
+  function idxFloor(arr, v) {
+    var lo = 0, hi = arr.length - 1;
+    while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (arr[mid] <= v) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  function cutPairs(N) {
+    var n = N.length, out = new Array(n);
+    for (var i = 0; i < n; i++) {
+      var x = N[i], p = i, ks = [], ps = [];
+      for (var k = 1; k < n && N[k] * 2 <= x; k++) {
+        var rem = x - N[k];
+        while (p > 0 && N[p] > rem) p--;
+        ks.push(k); ps.push(p);
+      }
+      out[i] = [Int32Array.from(ks), Int32Array.from(ps)];
+    }
+    return out;
+  }
+  function dpTree(ctx, os) {
+    var W = ctx.W, H = ctx.H, a = os[0].w, b = os[0].h;
+    var NX = normalSet(W, a, b); if (!NX) return null;
+    var NY = normalSet(H, a, b); if (!NY) return null;
+    var nx = NX.length, ny = NY.length, est = nx * ny * (nx + ny) / 2;
+    if (nx * ny > 2e6 || est > ctx.dpPer || ctx.dpUsed + est > ctx.dpTotal) return null;
+    ctx.dpUsed += est;
+    var XP = cutPairs(NX), YP = cutPairs(NY);
+    var g = new Int32Array(nx * ny), ch = new Int32Array(nx * ny);
+    for (var i = 0; i < nx; i++) {
+      var x = NX[i], kx = XP[i][0], px = XP[i][1], ca = Math.floor(x / a), cb = Math.floor(x / b), base = i * ny;
+      for (var j = 0; j < ny; j++) {
+        var y = NY[j], best = ca * Math.floor(y / b), c = 0, m, v;
+        v = cb * Math.floor(y / a); if (v > best) { best = v; c = 1; }
+        for (m = 0; m < kx.length; m++) { v = g[kx[m] * ny + j] + g[px[m] * ny + j]; if (v > best) { best = v; c = 2 + kx[m]; } }
+        var ky = YP[j][0], py = YP[j][1];
+        for (m = 0; m < ky.length; m++) { v = g[base + ky[m]] + g[base + py[m]]; if (v > best) { best = v; c = -1 - ky[m]; } }
+        g[base + j] = best; ch[base + j] = c;
+      }
+    }
+    function build(i, j) {
+      var c = ch[i * ny + j], k, p;
+      if (c === 0 || c === 1) return { k: 'g', o: c };
+      if (c >= 2) { k = c - 2; p = idxFloor(NX, NX[i] - NX[k]); return { k: 'v', at: NX[k], a: build(k, j), b: build(p, j) }; }
+      k = -1 - c; p = idxFloor(NY, NY[j] - NY[k]); return { k: 'h', at: NY[k], a: build(i, k), b: build(i, p) };
+    }
+    return build(nx - 1, ny - 1);
+  }
+
+  function fillSingle(bin, os, heur, split) {
+    for (;;) { var n = bin.find(os, heur); if (!n) break; bin.place(n, split); }
+    return bin;
+  }
+
+  // Most copies of one part on one sheet.
+  function capacityOf(ctx, ty) {
+    var W = ctx.W, H = ctx.H, mode = ctx.mode, os = ty.os;
+    var key = os.map(function (o) { return o.w + 'x' + o.h; }).join('|');
+    var hit = ctx.capCache.get(key);
+    if (hit) return hit;
+    var best = null;
+    function consider(pl, gfree, how) { if (!best || pl.length > best.count) best = { count: pl.length, pl: pl, gfree: gfree, how: how }; }
+    for (var k = 0; k < os.length; k++) { var pl = [], gf = []; buildTree({ k: 'g', o: k }, 0, 0, W, H, os, pl, gf); consider(pl, gf, 'grid'); }
+    if (os.length === 2) {
+      var bound = Math.floor((W * H) / (os[0].w * os[0].h)), dp = null;
+      var fb = fourBlockTree(W, H, os);
+      if (fb) { var pl2 = [], gf2 = []; buildTree(fb, 0, 0, W, H, os, pl2, gf2); consider(pl2, gf2, 'blocks'); }
+      if (best.count < bound) {
+        dp = dpTree(ctx, os);
+        if (dp) { var pl3 = [], gf3 = []; buildTree(dp, 0, 0, W, H, os, pl3, gf3); consider(pl3, gf3, 'exact'); }
+      }
+      if (best.count < bound && best.count <= 3000) {
+        for (var h = 0; h < 4; h++) {
+          if (mode === 'free') { var b = fillSingle(new MaxRects(W, H, 0), os, h, 0); consider(b.placed, null, 'fill'); }
+          else if (!dp) for (var s = 0; s < 2; s++) { var g2 = fillSingle(new Guillo(W, H, 0), os, h, s); consider(g2.placed, g2.free, 'fill'); }
+        }
+      }
+    }
+    ctx.capCache.set(key, best);
+    return best;
+  }
+
+  /* ---------- multi-sheet strategies ---------- */
+  function packFF(ctx, order, heur, split, bestFit, initBins) {
+    var types = ctx.types, T = types.length, bins = initBins || [], start = new Int32Array(T);
+    for (var n = 0; n < order.length; n++) {
+      var t = order[n], os = types[t].os, done = false, b, nd;
+      if (!bestFit) {
+        for (b = start[t]; b < bins.length; b++) {
+          OPS++;
+          nd = bins[b].find(os, heur);
+          if (nd) { nd.t = t; bins[b].place(nd, split); done = true; break; }
+          start[t] = b + 1;
+        }
+      } else {
+        var bn = null, bb = -1, from = Math.max(start[t], bins.length - 48);
+        OPS += bins.length - from;
+        for (b = from; b < bins.length; b++) {
+          var bin = bins[b];
+          if (bin.nofit[t]) { if (b === start[t]) start[t] = b + 1; continue; }
+          nd = bin.find(os, heur);
+          if (!nd) { bin.nofit[t] = 1; if (b === start[t]) start[t] = b + 1; continue; }
+          if (!bn || nd.s1 < bn.s1 || (nd.s1 === bn.s1 && nd.s2 < bn.s2)) { bn = nd; bb = b; }
+        }
+        if (!bn) {
+          for (b = start[t]; b < from; b++) {
+            OPS++;
+            if (bins[b].nofit[t]) { if (b === start[t]) start[t] = b + 1; continue; }
+            nd = bins[b].find(os, heur);
+            if (nd) { bn = nd; bb = b; break; }
+            bins[b].nofit[t] = 1; if (b === start[t]) start[t] = b + 1;
+          }
+        }
+        if (bn) { bn.t = t; bins[bb].place(bn, split); done = true; }
+      }
+      if (!done) {
+        var nb = makeBin(ctx.mode, ctx.W, ctx.H, T);
+        nd = nb.find(os, heur);
+        if (!nd) return null;
+        nd.t = t; nb.place(nd, split); bins.push(nb);
+      }
+      if (OPS > ctx.opsCap) return null;
+    }
+    return bins;
+  }
+
+  function packGlobal(ctx, heur, split) {
+    var types = ctx.types, T = types.length, rem = new Int32Array(T), left = 0, t;
+    for (t = 0; t < T; t++) { rem[t] = types[t].count; left += rem[t]; }
+    var bins = [];
+    while (left > 0) {
+      var bin = makeBin(ctx.mode, ctx.W, ctx.H, T); bins.push(bin);
+      var nofit = new Uint8Array(T);
+      for (;;) {
+        var bn = null, bt = -1;
+        for (t = 0; t < T; t++) {
+          if (!rem[t] || nofit[t]) continue;
+          var nd = bin.find(types[t].os, heur);
+          if (!nd) { nofit[t] = 1; continue; }
+          if (!bn || nd.s1 < bn.s1 || (nd.s1 === bn.s1 && (nd.s2 < bn.s2 || (nd.s2 === bn.s2 && types[t].area > types[bt].area)))) { bn = nd; bt = t; }
+        }
+        if (!bn) break;
+        bn.t = bt; bin.place(bn, split); rem[bt]--; left--;
+        if (OPS > ctx.opsCap) return null;
+      }
+      if (!bin.placed.length) return null;
+    }
+    return bins;
+  }
+
+  function packSeparate(ctx) {
+    var sheets = [];
+    ctx.types.forEach(function (ty, t) {
+      var cap = ty.cap, left = ty.count;
+      while (left > 0) {
+        var n = Math.min(left, cap.count);
+        sheets.push({ placed: cap.pl.slice(0, n).map(function (p) { return { x: p.x, y: p.y, w: p.w, h: p.h, r: p.r, t: t }; }) });
+        left -= n;
+      }
+    });
+    return sheets;
+  }
+
+  function binFromLayout(ctx, cap, t) {
+    var bin = makeBin(ctx.mode, ctx.W, ctx.H, ctx.types.length);
+    if (ctx.mode === 'free') {
+      for (var i = 0; i < cap.pl.length; i++) { var p = cap.pl[i]; bin.place({ x: p.x, y: p.y, w: p.w, h: p.h, r: p.r, t: t }); }
+    } else {
+      bin.free = cap.gfree.map(function (f) { return { x: f.x, y: f.y, w: f.w, h: f.h }; });
+      cap.pl.forEach(function (p) { bin.placed.push({ x: p.x, y: p.y, w: p.w, h: p.h, r: p.r, t: t }); bin.area += p.w * p.h; });
+    }
+    return bin;
+  }
+
+  // Full sheets of one part where the count allows, then everything left over
+  // is nested into those sheets' drop and into new sheets.
+  function packHybrid(ctx, heur, split, bestFit) {
+    var types = ctx.types, T = types.length, bins = [], order = [], t, k;
+    for (t = 0; t < T; t++) {
+      var ty = types[t], full = Math.floor(ty.count / ty.cap.count);
+      for (k = 0; k < full; k++) bins.push(binFromLayout(ctx, ty.cap, t));
+      for (k = full * ty.cap.count; k < ty.count; k++) order.push(t);
+    }
+    if (!bins.length) return null;
+    order.sort(function (a, b) { return (types[b].area - types[a].area) || (a - b); });
+    return packFF(ctx, order, heur, split, bestFit, bins);
+  }
+
+  /* ---------- solution ranking ---------- */
+  function sigOf(placed) {
+    return placed.map(function (p) { return p.t + ':' + p.x + ':' + p.y + ':' + p.r; }).sort().join(';');
+  }
+  function normalize(rawSheets) {
+    var arr = rawSheets.map(function (s) {
+      var area = 0, mx = 0, my = 0;
+      for (var i = 0; i < s.placed.length; i++) {
+        var p = s.placed[i]; area += p.w * p.h;
+        if (p.x + p.w > mx) mx = p.x + p.w; if (p.y + p.h > my) my = p.y + p.h;
+      }
+      return { placed: s.placed, area: area, bbox: mx * my, sig: sigOf(s.placed) };
+    });
+    arr.sort(function (a, b) { return (b.area - a.area) || (a.sig < b.sig ? -1 : a.sig > b.sig ? 1 : 0); });
+    var sigs = new Set(arr.map(function (s) { return s.sig; }));
+    return { sheets: arr, n: arr.length, layouts: sigs.size, last: arr.length ? arr[arr.length - 1].bbox : 0 };
+  }
+  // fewer sheets, then fewer distinct layouts (simpler for the shop), then a more compact last sheet
+  function better(a, b) {
+    if (!b) return true;
+    if (a.n !== b.n) return a.n < b.n;
+    if (a.layouts !== b.layouts) return a.layouts < b.layouts;
+    return a.last < b.last;
+  }
+
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function now() { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
+
+  function Cancelled() { this.cancelled = true; }
+
+  /* ---------- main entry ---------- */
+  // input: {sheetW, sheetH, margin, spacing, rotation:'0'|'90'|'any', mode:'guillotine'|'free',
+  //         allowW, allowH, parts:[{name, count, w, h}]}
+  // opts:  {yield: () => Promise, cancelled: () => bool, opsBudget}
+  async function nest(input, opts) {
+    opts = opts || {};
+    var t0 = now(), lastYield = t0;
+    async function tick() {
+      if (opts.cancelled && opts.cancelled()) throw new Cancelled();
+      if (opts.yield && now() - lastYield > 30) { await opts.yield(); lastYield = now(); if (opts.cancelled && opts.cancelled()) throw new Cancelled(); }
+    }
+    OPS = 0;
+    var mode = input.mode === 'free' ? 'free' : 'guillotine';
+    var rot = input.rotation === '90' ? '90' : input.rotation === 'any' ? 'any' : '0';
+    var sw = +input.sheetW, sh = +input.sheetH, mg = +input.margin || 0, sp = +input.spacing || 0;
+    var aw = +input.allowW || 0, ah = +input.allowH || 0, rows = input.parts || [];
+    var res = { mode: mode, rotation: rot, sheetW: sw, sheetH: sh, margin: mg, spacing: sp, allowW: aw, allowH: ah,
+      usableW: sw - 2 * mg, usableH: sh - 2 * mg, parts: [], sheets: [], layouts: [], error: null };
+    var vals = [sw, sh, mg, sp, aw, ah], maxDim = Math.max(sw, sh, 1);
+    rows.forEach(function (p) { vals.push(p.w, p.h); maxDim = Math.max(maxDim, p.w + aw, p.h + ah); });
+    var S = chooseScale(vals, maxDim);
+    function R(v) { return Math.round(v * S); }
+    var SP = R(sp), W = R(sw) - 2 * R(mg) + SP, H = R(sh) - 2 * R(mg) + SP;
+    res.scale = S;
+    if (!(sw > 0 && sh > 0)) { res.error = 'Enter a sheet width and height.'; return res; }
+    if (W <= SP || H <= SP) { res.error = 'The sheet spacing leaves no usable area on the sheet.'; return res; }
+
+    var types = [];
+    rows.forEach(function (p, i) {
+      var info = { row: i, name: p.name, count: p.count, w: p.w, h: p.h, fit: false, cap: 0, n0: 0, n90: 0, sheetsAlone: 0, fitsIfRotated: false };
+      res.parts.push(info);
+      var wi = R(p.w) + R(aw) + SP, hi = R(p.h) + R(ah) + SP;
+      var o0 = { w: wi, h: hi, r: 0 }, o1 = { w: hi, h: wi, r: 1 };
+      var cand = rot === '0' ? [o0] : rot === '90' ? [o1] : (wi === hi ? [o0] : [o0, o1]);
+      var os = cand.filter(function (o) { return o.w <= W && o.h <= H; });
+      if (!os.length) {
+        var other = rot === '0' ? o1 : rot === '90' ? o0 : null;
+        info.fitsIfRotated = !!(other && other.w <= W && other.h <= H);
+        return;
+      }
+      info.fit = true;
+      types.push({ row: i, count: p.count, os: os, area: wi * hi, maxS: Math.max(wi, hi), minS: Math.min(wi, hi), info: info });
+    });
+
+    var ctx = { types: types, W: W, H: H, mode: mode, capCache: new Map(), dpUsed: 0, dpPer: 1e7, dpTotal: 5e7, opsCap: Infinity };
+    for (var ti = 0; ti < types.length; ti++) {
+      var ty = types[ti];
+      ty.cap = capacityOf(ctx, ty);
+      var info = ty.info;
+      info.cap = ty.cap.count;
+      info.how = ty.cap.how;
+      info.n0 = ty.cap.pl.filter(function (p) { return p.r === 0; }).length;
+      info.n90 = info.cap - info.n0;
+      info.sheetsAlone = Math.ceil(ty.count / ty.cap.count);
+      info.capLayout = ty.cap.pl.map(function (p) { return { x: mg + p.x / S, y: mg + p.y / S, w: (p.w - SP) / S, h: (p.h - SP) / S, rot: p.r === 1 }; });
+      await tick();
+    }
+    res.capMs = now() - t0;
+
+    var total = 0, areaSum = 0, big = 0;
+    types.forEach(function (ty) {
+      total += ty.count; areaSum += ty.area * ty.count;
+      if (ty.os.every(function (o) { return 2 * o.w > W && 2 * o.h > H; })) big += ty.count;
+    });
+    res.piecesToNest = total;
+    res.lowerBound = total ? Math.max(Math.ceil(areaSum / (W * H) - 1e-9), big) : 0;
+    res.separateTotal = types.reduce(function (s, ty) { return s + ty.info.sheetsAlone; }, 0);
+    if (!total) { res.ms = now() - t0; return finish(res, null, types, S, SP, mg, sw, sh); }
+
+    var best = null, bestName = '', tried = 0;
+    function consider(raw, name) {
+      if (!raw) return;
+      tried++;
+      if (best && raw.length > best.n) return;
+      var sol = normalize(raw);
+      if (better(sol, best)) { best = sol; bestName = name; }
+    }
+    consider(packSeparate(ctx), 'separate');
+
+    var HEURS = mode === 'free' ? [0, 2, 1, 3] : [0, 1, 2, 3];
+    var SPLITS = mode === 'free' ? [0] : [0, 1, 2, 3];
+    function orderBy(keyFn) {
+      var idx = [];
+      types.forEach(function (ty, t) { for (var c = 0; c < ty.count; c++) idx.push(t); });
+      var keys = types.map(keyFn);
+      idx.sort(function (a, b) { return (keys[b][0] - keys[a][0]) || (keys[b][1] - keys[a][1]) || (a - b); });
+      return idx;
+    }
+    var ORDERS = [
+      orderBy(function (t) { return [t.area, t.maxS]; }),
+      orderBy(function (t) { return [t.maxS, t.minS]; }),
+      orderBy(function (t) { return [t.os[0].h, t.os[0].w]; }),
+      orderBy(function (t) { return [t.os[0].w, t.os[0].h]; }),
+      orderBy(function (t) { return [t.maxS + t.minS, t.maxS]; })
+    ];
+    var plan = [];
+    HEURS.forEach(function (h) { SPLITS.forEach(function (s) { plan.push({ k: 'global', h: h, s: s }); }); });
+    HEURS.forEach(function (h) { SPLITS.forEach(function (s) { plan.push({ k: 'hybrid', h: h, s: s, bf: false }); plan.push({ k: 'hybrid', h: h, s: s, bf: true }); }); });
+    ORDERS.forEach(function (o, oi) {
+      HEURS.forEach(function (h) { SPLITS.forEach(function (s) { plan.push({ k: 'ff', o: oi, h: h, s: s, bf: false }); plan.push({ k: 'ff', o: oi, h: h, s: s, bf: true }); }); });
+    });
+
+    var budget = opts.opsBudget || 1.2e8;
+    ctx.opsCap = budget;
+    for (var pi = 0; pi < plan.length; pi++) {
+      if (OPS > budget) break;
+      if (best.n <= res.lowerBound && OPS > budget * 0.15) break;
+      var st = plan[pi];
+      if (st.k === 'global') consider(packGlobal(ctx, st.h, st.s), 'global');
+      else if (st.k === 'hybrid') consider(packHybrid(ctx, st.h, st.s, st.bf), 'hybrid');
+      else consider(packFF(ctx, ORDERS[st.o], st.h, st.s, st.bf), st.bf ? 'best-fit' : 'first-fit');
+      await tick();
+    }
+
+    // seeded restarts with perturbed order (same input gives the same answer)
+    var rng = mulberry32(hashStr(JSON.stringify([sw, sh, mg, sp, aw, ah, rot, mode, rows.map(function (p) { return [p.count, p.w, p.h]; })])));
+    for (var it = 0; it < 400 && OPS < budget && best.n > res.lowerBound; it++) {
+      var keys = types.map(function (ty) { return ty.area * (0.75 + 0.5 * rng()); });
+      var ord = [];
+      types.forEach(function (ty, t) { for (var c = 0; c < ty.count; c++) ord.push(t); });
+      ord.sort(function (a, b) { return (keys[b] - keys[a]) || (a - b); });
+      var h = HEURS[Math.floor(rng() * HEURS.length)], s = SPLITS[Math.floor(rng() * SPLITS.length)];
+      consider(packFF(ctx, ord, h, s, rng() < 0.5), 'restart');
+      await tick();
+    }
+
+    res.tried = tried;
+    res.strategy = bestName;
+    res.ms = now() - t0;
+    return finish(res, best, types, S, SP, mg, sw, sh);
+  }
+
+  function finish(res, best, types, S, SP, mg, sw, sh) {
+    var sheetArea = sw * sh, totalPartArea = 0;
+    if (best) {
+      res.sheets = best.sheets.map(function (s) {
+        var partArea = 0;
+        var placements = s.placed.map(function (p) {
+          var ty = types[p.t], cw = (p.w - SP) / S, chh = (p.h - SP) / S;
+          partArea += cw * chh;
+          return { row: ty.row, x: mg + p.x / S, y: mg + p.y / S, w: cw, h: chh, rot: p.r === 1 };
+        });
+        totalPartArea += partArea;
+        return { placements: placements, partArea: partArea, yield: partArea / sheetArea, sig: s.sig };
+      });
+      var groups = [];
+      res.sheets.forEach(function (s, i) {
+        var g = groups[groups.length - 1];
+        if (g && g.sig === s.sig) { g.count++; g.to = i; }
+        else groups.push({ sig: s.sig, from: i, to: i, count: 1 });
+      });
+      res.layouts = groups.map(function (g) { return { first: g.from, last: g.to, count: g.count }; });
+      res.sheets.forEach(function (s) { delete s.sig; });
+    }
+    res.sheetCount = res.sheets.length;
+    res.partArea = totalPartArea;
+    res.yield = res.sheetCount ? totalPartArea / (res.sheetCount * sheetArea) : 0;
+    res.optimal = res.sheetCount > 0 && res.sheetCount === res.lowerBound;
+    res.nested = res.sheets.reduce(function (s, x) { return s + x.placements.length; }, 0);
+    return res;
+  }
+
+  return { nest: nest, _internals: { MaxRects: MaxRects, Guillo: Guillo, chooseScale: chooseScale } };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var TEMPLATE_ROWS = [["F-01","6","118","18.75"],["F-02","10","118","10.5"],["F-03","14","118","7.25"],["F-04","8","96","6.5"],["F-05","12","108","5.75"],["F-06","16","118","4.5"],["F-07","6","118","8.25"],["F-08","20","48","3.5"]];
+  var TEMPLATE_NAME = "Example parts";
+  var IN_CLAUDE = !!(window.claude && typeof window.claude.use === 'function');
+  var STORE_KEY = 'nesting-app:v1';
+  var XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  var FACTOR = { in: { in: 1, ft: 12, mm: 1 / 25.4, m: 1000 / 25.4 }, mm: { in: 25.4, ft: 304.8, mm: 1, m: 1000 } };
+  var PRESETS = {
+    in: [[96, 48, '4×8 ft'], [120, 48, '4×10 ft'], [144, 48, '4×12 ft'], [120, 60, '5×10 ft'], [144, 60, '5×12 ft']],
+    mm: [[2440, 1220, '2440×1220'], [3050, 1220, '3050×1220'], [3660, 1220, '3660×1220'], [3050, 1525, '3050×1525']]
+  };
+  var DEFAULTS = { units: 'in', sheetW: '120', sheetH: '48', rotation: '0', spacing: '0.25', margin: '0.5', mode: 'guillotine', tplUnits: 'in', allowW: '0', allowH: '0', price: '' };
+  var CHOICES = { units: ['in', 'mm'], rotation: ['0', '90', 'any'], mode: ['guillotine', 'free'], tplUnits: ['in', 'ft', 'mm', 'm'] };
+
+  var S = Object.assign({}, DEFAULTS);
+  var rows = [];
+  var hasMaterial = false;
+  var fileName = TEMPLATE_NAME;
+  var lastResult = null;
+  var downloads = null;
+  var cards = [];
+  var showAllLayouts = false;
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(v, d) {
+    if (v == null || !isFinite(v)) return '—';
+    d = d == null ? 4 : d;
+    var p = Math.pow(10, d), s = (Math.round(v * p) / p).toFixed(d);
+    s = s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+    return s === '-0' ? '0' : s;
+  }
+  function fmtInt(n) { return Number(n).toLocaleString('en-US'); }
+  function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
+  function plural(n, one, many) { return n === 1 ? one : (many || one + 's'); }
+  function unitMark() { return S.units === 'in' ? '"' : ' mm'; }
+
+  /* ---------- number parsing: decimals, fractions, feet-inches ---------- */
+  function parseInches(s) {
+    s = s.replace(/"$/, '').trim();
+    var m = s.match(/^(\d+(?:\.\d+)?)\s*(?:-|\s)\s*(\d+)\s*\/\s*(\d+)$/);
+    if (m) return parseFloat(m[1]) + (+m[2]) / (+m[3]);
+    m = s.match(/^(\d+)\s*\/\s*(\d+)$/);
+    if (m) return (+m[1]) / (+m[2]);
+    if (/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return parseFloat(s);
+    return NaN;
+  }
+  function parseNum(str) {
+    if (str == null) return NaN;
+    if (typeof str === 'number') return str;
+    var s = String(str).trim().replace(/,/g, '');
+    if (!s) return NaN;
+    s = s.replace(/\s*(inches|inch|in|mm)\.?$/i, '').trim();
+    var m = s.match(/^(\d+(?:\.\d+)?)\s*(?:'|ft)\s*-?\s*(.*)$/i);
+    if (m) {
+      var rest = m[2].replace(/"$/, '').trim();
+      var inch = rest ? parseInches(rest) : 0;
+      return isNaN(inch) ? NaN : parseFloat(m[1]) * 12 + inch;
+    }
+    return parseInches(s);
+  }
+  function optNum(v) { return String(v == null ? '' : v).trim() === '' ? 0 : parseNum(v); }
+
+  /* ---------- storage (this browser only) ---------- */
+  function loadState() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { saved = null; }
+    if (saved && saved.settings && typeof saved.settings === 'object') {
+      Object.keys(DEFAULTS).forEach(function (k) {
+        var v = saved.settings[k];
+        if (typeof v !== 'string') return;
+        if (CHOICES[k] && CHOICES[k].indexOf(v) < 0) return;
+        S[k] = v;
+      });
+    }
+    if (saved && Array.isArray(saved.rows) && saved.rows.length) {
+      rows = saved.rows.map(normRow);
+      hasMaterial = !!saved.hasMaterial;
+      fileName = typeof saved.fileName === 'string' ? saved.fileName : 'Saved parts';
+    } else {
+      rows = TEMPLATE_ROWS.map(function (r) { return { panel: r[0], count: r[1], width: r[2], height: r[3], material: '' }; });
+      hasMaterial = false;
+      fileName = TEMPLATE_NAME;
+    }
+  }
+  function normRow(r) {
+    r = r || {};
+    function s(v) { return v == null ? '' : String(v); }
+    return { panel: s(r.panel), count: s(r.count), width: s(r.width), height: s(r.height), material: s(r.material) };
+  }
+  var saveTimer = null;
+  function saveSoon() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify({ settings: S, rows: rows, hasMaterial: hasMaterial, fileName: fileName })); } catch (e) { /* storage unavailable */ }
+    }, 400);
+  }
+
+  /* ---------- reading parts ---------- */
+  function parseDelimited(text) {
+    text = String(text).replace(/^﻿/, '');
+    var first = (text.split(/\r?\n/).filter(function (l) { return l.trim(); })[0]) || '';
+    var tabs = first.split('\t').length, semis = first.split(';').length, commas = first.split(',').length;
+    var delim = tabs > 1 && tabs >= commas ? '\t' : (semis > commas ? ';' : ',');
+    var out = [], row = [], field = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"' && field === '') q = true;
+      else if (c === delim) { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); out.push(row); row = []; field = '';
+      } else field += c;
+    }
+    if (field !== '' || row.length) { row.push(field); out.push(row); }
+    return out.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+  }
+  function tableToRows(table) {
+    if (!table.length) return { error: 'The file has no rows.' };
+    function norm(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/[^a-z]/g, ''); }
+    var head = table[0].map(norm);
+    function col(names) { for (var n = 0; n < names.length; n++) { var k = head.indexOf(names[n]); if (k >= 0) return k; } return -1; }
+    var ip = col(['panel', 'panelid', 'panelname', 'part', 'partname', 'partno', 'mark', 'name', 'piece', 'item', 'id']);
+    var ic = col(['count', 'qty', 'quantity', 'pcs', 'pieces', 'number']);
+    var iw = col(['width', 'w', 'widthin', 'widthmm', 'x']);
+    var ih = col(['height', 'h', 'heightin', 'heightmm', 'length', 'len', 'y']);
+    var im = col(['material', 'materialcolor', 'color', 'colour', 'finish', 'gauge', 'group']);
+    var start = 1;
+    if (iw < 0 || ih < 0) {
+      if (table[0].length >= 4 && !isNaN(parseNum(table[0][2])) && !isNaN(parseNum(table[0][3]))) { ip = 0; ic = 1; iw = 2; ih = 3; im = table[0].length >= 5 ? 4 : -1; start = 0; }
+      else return { error: 'Couldn’t find Width and Height columns. The first row should read Panel, Count, Width, Height.' };
+    }
+    var out = [];
+    for (var r = start; r < table.length; r++) {
+      var t = table[r];
+      var g = function (k) { return k >= 0 && t[k] != null ? String(t[k]).trim() : ''; };
+      var row = { panel: g(ip), count: g(ic), width: g(iw), height: g(ih), material: g(im) };
+      if (!row.panel && !row.count && !row.width && !row.height) continue;
+      out.push(row);
+    }
+    if (!out.length) return { error: 'The file has a header row but no parts under it.' };
+    var mat = im >= 0 && out.some(function (r) { return r.material; });
+    return { rows: out, hasMaterial: mat };
+  }
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = resolve; s.onerror = function () { reject(new Error('load failed')); };
+      document.head.appendChild(s);
+    });
+  }
+  var xlsxPromise = null;
+  function getXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (!xlsxPromise) xlsxPromise = loadScript(XLSX_URL).then(function () { return window.XLSX; }, function (e) { xlsxPromise = null; throw e; });
+    return xlsxPromise;
+  }
+  function readFile(file) {
+    if (!file) return;
+    var isXlsx = /\.(xlsx|xls)$/i.test(file.name);
+    var reader = new FileReader();
+    reader.onerror = function () { toast('Couldn’t read ' + file.name + '.'); };
+    reader.onload = function () {
+      if (isXlsx) {
+        getXLSX().then(function (XLSX) {
+          var wb = XLSX.read(new Uint8Array(reader.result), { type: 'array' });
+          var ws = wb.Sheets[wb.SheetNames[0]];
+          var table = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+          applyTable(table.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); }), file.name);
+        }).catch(function () { toast('Couldn’t open the Excel file here. Save it as CSV and upload that instead.'); });
+      } else applyTable(parseDelimited(reader.result), file.name);
+    };
+    if (isXlsx) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+  }
+  function applyTable(table, name) {
+    var r = tableToRows(table);
+    if (r.error) { toast(r.error); return; }
+    rows = r.rows; hasMaterial = r.hasMaterial; fileName = name;
+    showAllLayouts = false;
+    renderPartsTable();
+    changed(true);
+    toast('Loaded ' + rows.length + ' ' + plural(rows.length, 'row') + ' from ' + name + '.');
+  }
+
+  /* ---------- rows → engine parts ---------- */
+  function parseRows() {
+    var f = FACTOR[S.units][S.tplUnits];
+    return rows.map(function (r, i) {
+      var name = String(r.panel || '').trim() || ('Row ' + (i + 1));
+      var cRaw = String(r.count == null ? '' : r.count).trim().replace(/,/g, '');
+      var cnt = cRaw === '' ? NaN : Number(cRaw);
+      var w = parseNum(r.width), h = parseNum(r.height);
+      var issues = [], bad = {};
+      if (!(isFinite(cnt) && Math.floor(cnt) === cnt && cnt >= 0)) { issues.push(cRaw === '' ? 'Count is blank' : 'Count must be a whole number'); bad.count = 1; }
+      if (!(w > 0)) { issues.push(String(r.width || '').trim() === '' ? 'Width is blank' : 'Width isn’t a number'); bad.width = 1; }
+      if (!(h > 0)) { issues.push(String(r.height || '').trim() === '' ? 'Height is blank' : 'Height isn’t a number'); bad.height = 1; }
+      return { i: i, name: name, count: cnt, w: w * f, h: h * f, material: hasMaterial ? (String(r.material || '').trim() || 'No material') : '', issues: issues, bad: bad };
+    });
+  }
+  function readSettings() {
+    var st = {
+      units: S.units, rotation: S.rotation, mode: S.mode,
+      sheetW: parseNum(S.sheetW), sheetH: parseNum(S.sheetH),
+      spacing: optNum(S.spacing), margin: optNum(S.margin),
+      allowW: optNum(S.allowW), allowH: optNum(S.allowH), price: optNum(S.price)
+    };
+    var errs = [];
+    if (!(st.sheetW > 0)) errs.push('Sheet width needs a number above 0.');
+    if (!(st.sheetH > 0)) errs.push('Sheet height needs a number above 0.');
+    if (!(st.spacing >= 0)) errs.push('Part spacing needs a number (0 or more).');
+    if (!(st.margin >= 0)) errs.push('Sheet spacing needs a number (0 or more).');
+    if (!(st.allowW >= 0) || !(st.allowH >= 0)) errs.push('Width and height allowances need numbers (0 or more).');
+    if (!(st.price >= 0)) errs.push('Price per sheet needs a number.');
+    if (!errs.length && (st.sheetW - 2 * st.margin <= 0 || st.sheetH - 2 * st.margin <= 0)) errs.push('Sheet spacing leaves no usable area. Make it smaller than half the sheet.');
+    st.errors = errs;
+    return st;
+  }
+
+  /* ---------- running the nest ---------- */
+  var runToken = 0, runTimer = null;
+  function setRun(state, text) {
+    var el = $('#runline');
+    el.setAttribute('data-state', state);
+    $('#runText').textContent = text;
+  }
+  function schedule(delay) {
+    clearTimeout(runTimer);
+    runToken++;
+    setRun('busy', 'Nesting…');
+    runTimer = setTimeout(run, delay == null ? 280 : delay);
+  }
+  function changed(now) {
+    saveSoon();
+    markRowStates(false);
+    updatePartsSummary();
+    schedule(now ? 0 : 280);
+  }
+  function run() {
+    var token = ++runToken;
+    var st = readSettings();
+    var parsed = parseRows();
+    if (st.errors.length) {
+      lastResult = null;
+      renderSettingsError(st.errors);
+      setRun('error', 'Check the sheet settings');
+      return;
+    }
+    var groupsMap = new Map();
+    parsed.forEach(function (p) {
+      if (p.issues.length || p.count === 0) return;
+      if (!groupsMap.has(p.material)) groupsMap.set(p.material, []);
+      groupsMap.get(p.material).push(p);
+    });
+    var entries = Array.from(groupsMap.entries());
+    var t0 = performance.now(), groups = [];
+    setRun('busy', 'Nesting…');
+    var chain = Promise.resolve();
+    entries.forEach(function (e) {
+      chain = chain.then(function () {
+        if (token !== runToken) return;
+        return NestEngine.nest({
+          sheetW: st.sheetW, sheetH: st.sheetH, margin: st.margin, spacing: st.spacing,
+          rotation: st.rotation, mode: st.mode, allowW: st.allowW, allowH: st.allowH,
+          parts: e[1].map(function (p) { return { name: p.name, count: p.count, w: p.w, h: p.h }; })
+        }, {
+          yield: function () { return new Promise(function (r) { setTimeout(r, 0); }); },
+          cancelled: function () { return token !== runToken; }
+        }).then(function (res) { groups.push({ material: e[0], list: e[1], res: res }); });
+      });
+    });
+    chain.then(function () {
+      if (token !== runToken) return;
+      var engineErr = groups.filter(function (g) { return g.res.error; })[0];
+      if (engineErr) { lastResult = null; renderSettingsError([engineErr.res.error]); setRun('error', 'Check the sheet settings'); return; }
+      lastResult = { st: st, parsed: parsed, groups: groups, ms: performance.now() - t0, fileName: fileName, units: S.units, tplUnits: S.tplUnits };
+      render(lastResult);
+      var tried = groups.reduce(function (s, g) { return s + (g.res.tried || 0); }, 0);
+      setRun('done', tried ? 'Best of ' + fmtInt(tried) + ' nesting runs · ' + (lastResult.ms / 1000).toFixed(2) + ' s' : 'Ready');
+    }).catch(function (err) {
+      if (err && err.cancelled) return;
+      if (token !== runToken) return;
+      console.error(err);
+      setRun('error', 'Nesting stopped on an error');
+      toast('Nesting stopped on an error. Check the parts table for unusual values.');
+    });
+  }
+
+  /* ---------- totals ---------- */
+  function totalsOf(R) {
+    var t = { sheets: 0, lb: 0, nested: 0, partArea: 0, separate: 0, optimal: true, requested: 0, notFit: 0, notFitRows: [], invalid: [] };
+    R.groups.forEach(function (g) {
+      t.sheets += g.res.sheetCount; t.lb += g.res.lowerBound; t.nested += g.res.nested;
+      t.partArea += g.res.partArea; t.separate += g.res.separateTotal;
+      if (g.res.sheetCount && g.res.sheetCount !== g.res.lowerBound) t.optimal = false;
+      g.res.parts.forEach(function (info, k) { if (!info.fit) { t.notFit += info.count; t.notFitRows.push({ p: g.list[k], info: info }); } });
+    });
+    R.parsed.forEach(function (p) { if (p.issues.length) t.invalid.push(p); else t.requested += p.count; });
+    t.sheetArea = R.st.sheetW * R.st.sheetH;
+    t.yield = t.sheets ? t.partArea / (t.sheets * t.sheetArea) : 0;
+    return t;
+  }
+  function rotLabel(v) { return v === 'any' ? 'any rotation' : v === '90' ? 'rotated 90°' : 'as drawn (0°)'; }
+  function modeLabel(v) { return v === 'free' ? 'CNC / router' : 'shear / saw'; }
+
+  /* ---------- rendering ---------- */
+  function render(R) {
+    var T = totalsOf(R);
+    renderBand(R, T);
+    renderNotices(R, T);
+    renderMaterials(R);
+    renderPanelTable(R);
+    renderLayouts(R);
+    markRowStates(true);
+  }
+  function renderSettingsError(errs) {
+    $('#band').innerHTML = '<div class="stat hero"><span class="k">Sheets needed</span><span class="v">—</span><span class="s">Fix the sheet settings to see a count.</span></div>';
+    $('#notices').innerHTML = '<div class="notice bad"><span class="t">Sheet settings need attention</span><ul>' + errs.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>';
+    $('#matCard').hidden = true;
+    $('#panelTable').innerHTML = '';
+    $('#layouts').innerHTML = '';
+    cards = [];
+  }
+  function renderBand(R, T) {
+    var st = R.st, u = st.units;
+    var h = '';
+    h += '<div class="stat hero"><span class="k">Sheets needed</span><span class="v">' + fmtInt(T.sheets) + '</span>' +
+      '<span class="s">' + esc(fmt(st.sheetW) + ' × ' + fmt(st.sheetH) + ' ' + u) + ' sheets · ' + modeLabel(st.mode) + ' · ' + rotLabel(st.rotation) +
+      (R.groups.length > 1 ? ' · ' + R.groups.length + ' materials' : '') + '</span></div>';
+    var totalReq = T.requested;
+    h += '<div class="stat"><span class="k">Pieces nested</span><span class="v">' + fmtInt(T.nested) + (T.nested !== totalReq ? '<small>/ ' + fmtInt(totalReq) + '</small>' : '') + '</span>' +
+      '<span class="s">' + (T.notFit ? fmtInt(T.notFit) + ' ' + plural(T.notFit, 'piece') + ' don’t fit this sheet' : (totalReq ? 'Every piece fits' : 'No parts yet')) + '</span></div>';
+    h += '<div class="stat"><span class="k">Yield</span><span class="v">' + (T.sheets ? fmtPct(T.yield) : '—') + '</span>' +
+      '<span class="s">' + (T.sheets ? 'of ' + fmtInt(Math.round(T.sheets * T.sheetArea)) + ' sq ' + u + ' bought' : 'Part area ÷ sheet area') + '</span></div>';
+    h += '<div class="stat"><span class="k">Lower bound</span><span class="v">' + (T.sheets ? fmtInt(T.lb) : '—') + '</span>' +
+      '<span class="s">' + (!T.sheets ? 'No layout can use fewer sheets' : T.optimal ? '<span class="pill ok">Proven minimum</span>' : 'No layout can use fewer; best found is ' + (T.sheets - T.lb) + ' more') + '</span></div>';
+    h += '<div class="stat"><span class="k">Cut separately</span><span class="v">' + (T.sheets ? fmtInt(T.separate) : '—') + '</span>' +
+      '<span class="s">sheets if each panel gets its own sheets</span></div>';
+    if (st.price > 0 && T.sheets) {
+      h += '<div class="stat"><span class="k">Material cost</span><span class="v">$' + fmtInt(Math.round(T.sheets * st.price)) + '</span>' +
+        '<span class="s">at $' + esc(fmt(st.price, 2)) + ' per sheet</span></div>';
+    }
+    $('#band').innerHTML = h;
+  }
+  function renderNotices(R, T) {
+    var st = R.st, u = st.units, out = [];
+    var uw = st.sheetW - 2 * st.margin, uh = st.sheetH - 2 * st.margin;
+    if (T.notFitRows.length) {
+      var items = T.notFitRows.slice(0, 12).map(function (x) {
+        var p = x.p, w = p.w + st.allowW, hh = p.h + st.allowH;
+        var why;
+        if (st.rotation === '90') why = (hh > uw ? fmt(hh) + ' is wider than the usable ' + fmt(uw) : fmt(w) + ' is taller than the usable ' + fmt(uh));
+        else if (st.rotation === 'any') why = 'larger than the usable ' + fmt(uw) + ' × ' + fmt(uh) + ' in both directions';
+        else why = (w > uw ? fmt(w) + ' is longer than the usable ' + fmt(uw) : fmt(hh) + ' is taller than the usable ' + fmt(uh));
+        return '<li><b>' + esc(p.name) + '</b> <span class="mono">' + fmt(w) + ' × ' + fmt(hh) + '</span> · ' + why + ' ' + u +
+          (x.info.fitsIfRotated ? ' · fits if Rotation is set to Any' : '') + '</li>';
+      }).join('');
+      var more = T.notFitRows.length > 12 ? '<li>…and ' + (T.notFitRows.length - 12) + ' more</li>' : '';
+      out.push('<div class="notice bad"><span class="t">' + T.notFitRows.length + ' ' + plural(T.notFitRows.length, 'part') + ' won’t fit a ' + fmt(st.sheetW) + ' × ' + fmt(st.sheetH) + ' ' + u + ' sheet</span>' +
+        '<p>These are left out of the sheet count. Use a larger sheet, splice them, or change the rotation.</p><ul>' + items + more + '</ul></div>');
+    }
+    if (T.invalid.length) {
+      var list = T.invalid.slice(0, 8).map(function (p) { return '<li>Row ' + (p.i + 1) + (rows[p.i] && rows[p.i].panel ? ' (' + esc(rows[p.i].panel) + ')' : '') + ': ' + esc(p.issues.join(', ')) + '</li>'; }).join('');
+      out.push('<div class="notice warn"><span class="t">' + T.invalid.length + ' ' + plural(T.invalid.length, 'row') + ' skipped</span><ul>' + list +
+        (T.invalid.length > 8 ? '<li>…and ' + (T.invalid.length - 8) + ' more</li>' : '') + '</ul></div>');
+    }
+    // unit sanity: blanks this thin are rarely real
+    var mins = R.parsed.filter(function (p) { return !p.issues.length && p.count > 0; }).map(function (p) { return Math.min(p.w, p.h); }).sort(function (a, b) { return a - b; });
+    if (mins.length) {
+      var med = mins[Math.floor(mins.length / 2)], thr = u === 'in' ? 1.5 : 38;
+      if (med < thr) {
+        out.push('<div class="notice info"><span class="t">Check the template’s units</span>' +
+          '<p>Half of these parts are under ' + thr + ' ' + u + ' on their short side (range ' + fmt(mins[0]) + '–' + fmt(mins[mins.length - 1]) + ' ' + u + '). ' +
+          'A blank that narrow can’t be formed on a brake. If the file is in feet or meters, change <b>Template values are in</b> under More settings.</p></div>');
+      }
+    }
+    $('#notices').innerHTML = out.join('');
+  }
+  function renderMaterials(R) {
+    var card = $('#matCard');
+    if (!(hasMaterial && R.groups.length)) { card.hidden = true; return; }
+    card.hidden = false;
+    var h = '<thead><tr><th>Material</th><th class="num">Pieces</th><th class="num">Sheets</th><th class="num">Yield</th><th class="num">Lower bound</th></tr></thead><tbody>';
+    R.groups.forEach(function (g) {
+      h += '<tr><td class="name">' + esc(g.material) + '</td><td class="num">' + fmtInt(g.res.nested) + '</td><td class="num">' + fmtInt(g.res.sheetCount) + '</td><td class="num">' + (g.res.sheetCount ? fmtPct(g.res.yield) : '—') + '</td><td class="num">' + fmtInt(g.res.lowerBound) + '</td></tr>';
+    });
+    $('#matTable').innerHTML = h + '</tbody>';
+  }
+  function infoMap(R) {
+    var m = new Map();
+    R.groups.forEach(function (g) { g.res.parts.forEach(function (info, k) { m.set(g.list[k].i, { info: info, g: g }); }); });
+    return m;
+  }
+  function renderPanelTable(R) {
+    var st = R.st, u = st.units, mat = hasMaterial, map = infoMap(R);
+    var h = '<thead><tr><th>Panel</th>' + (mat ? '<th>Material</th>' : '') + '<th class="num">Width (' + u + ')</th><th class="num">Height (' + u + ')</th><th class="num">Qty</th><th class="num">Fits per sheet</th><th class="num">Sheets if alone</th><th>Status</th><th><span class="sr">Layout</span></th></tr></thead><tbody>';
+    var qty = 0, alone = 0;
+    R.parsed.forEach(function (p) {
+      var e = map.get(p.i), fits = '', al = '', status, view = '';
+      if (p.issues.length) status = '<span class="pill bad" title="' + esc(p.issues.join(', ')) + '">Fix row ' + (p.i + 1) + '</span>';
+      else if (p.count === 0) status = '<span class="pill">Qty 0, skipped</span>';
+      else if (e && e.info.fit) {
+        var inf = e.info;
+        fits = fmtInt(inf.cap) + (inf.n0 && inf.n90 ? ' <span class="dim-sub">(' + inf.n0 + ' + ' + inf.n90 + ' rotated)</span>' : '');
+        al = fmtInt(inf.sheetsAlone); alone += inf.sheetsAlone; qty += p.count;
+        status = '<span class="pill ok">Nested</span>';
+        view = '<button type="button" class="link" data-view="' + p.i + '">View</button>';
+      } else if (e) {
+        qty += p.count;
+        status = e.info.fitsIfRotated ? '<span class="pill warn">Fits if rotated</span>' : '<span class="pill bad">Too big</span>';
+      } else status = '';
+      var w = p.issues.length && p.bad.width ? '—' : fmt(p.w + st.allowW), hh = p.issues.length && p.bad.height ? '—' : fmt(p.h + st.allowH);
+      h += '<tr><td class="name">' + esc(p.name) + '</td>' + (mat ? '<td>' + esc(p.material) + '</td>' : '') +
+        '<td class="num">' + w + '</td><td class="num">' + hh + '</td><td class="num">' + (isFinite(p.count) ? fmtInt(p.count) : '—') + '</td>' +
+        '<td class="num">' + fits + '</td><td class="num">' + al + '</td><td>' + status + '</td><td>' + view + '</td></tr>';
+    });
+    h += '</tbody><tfoot><tr><td>Total</td>' + (mat ? '<td></td>' : '') + '<td></td><td></td><td class="num">' + fmtInt(qty) + '</td><td></td><td class="num">' + fmtInt(alone) + '</td><td colspan="2"></td></tr></tfoot>';
+    $('#panelTable').innerHTML = h;
+  }
+
+  function colorFor(i) {
+    var hue = (i * 137.508 + 205) % 360;
+    return { fill: 'hsl(' + hue.toFixed(1) + ' 52% 66%)', stroke: 'hsl(' + hue.toFixed(1) + ' 42% 33%)' };
+  }
+  function nameOf(i) { var p = lastResult && lastResult.parsed[i]; return p ? p.name : 'Part'; }
+
+  // Draw one sheet: dimension strings, edge spacing hatch, and every part to scale.
+  function drawSheet(el, geo, placements, rowOf, zoom) {
+    var box = el.clientWidth ? el.clientWidth - 28 : 640;
+    var avail = Math.max(240, box) * (zoom || 1);
+    var padL = 30, padT = 30, padR = 4, padB = 4;
+    var sw = geo.sheetW, sh = geo.sheetH, mg = geo.margin;
+    var k = (avail - padL - padR) / sw;
+    var maxH = 560 * (zoom || 1);
+    if (sh * k > maxH) k = maxH / sh;
+    var dw = sw * k, dh = sh * k, W = Math.ceil(padL + dw + padR), H = Math.ceil(padT + dh + padB);
+    var um = unitMark();
+    var s = '<svg class="sheet-svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sheet ' + fmt(sw) + ' by ' + fmt(sh) + ' with ' + placements.length + ' parts">';
+    var yd = 18, xd = 16;
+    s += '<g class="dim">' +
+      '<line x1="' + padL + '" y1="' + (yd - 6) + '" x2="' + padL + '" y2="' + (padT - 3) + '"/>' +
+      '<line x1="' + (padL + dw) + '" y1="' + (yd - 6) + '" x2="' + (padL + dw) + '" y2="' + (padT - 3) + '"/>' +
+      '<line x1="' + padL + '" y1="' + yd + '" x2="' + (padL + dw) + '" y2="' + yd + '"/>' +
+      '<line class="tick" x1="' + (padL - 4) + '" y1="' + (yd + 4) + '" x2="' + (padL + 4) + '" y2="' + (yd - 4) + '"/>' +
+      '<line class="tick" x1="' + (padL + dw - 4) + '" y1="' + (yd + 4) + '" x2="' + (padL + dw + 4) + '" y2="' + (yd - 4) + '"/>' +
+      '<text x="' + (padL + dw / 2) + '" y="' + (yd - 5) + '" text-anchor="middle">' + esc(fmt(sw) + um) + '</text>' +
+      '<line x1="' + (xd - 6) + '" y1="' + padT + '" x2="' + (padL - 3) + '" y2="' + padT + '"/>' +
+      '<line x1="' + (xd - 6) + '" y1="' + (padT + dh) + '" x2="' + (padL - 3) + '" y2="' + (padT + dh) + '"/>' +
+      '<line x1="' + xd + '" y1="' + padT + '" x2="' + xd + '" y2="' + (padT + dh) + '"/>' +
+      '<line class="tick" x1="' + (xd - 4) + '" y1="' + (padT + 4) + '" x2="' + (xd + 4) + '" y2="' + (padT - 4) + '"/>' +
+      '<line class="tick" x1="' + (xd - 4) + '" y1="' + (padT + dh + 4) + '" x2="' + (xd + 4) + '" y2="' + (padT + dh - 4) + '"/>' +
+      '<text transform="translate(' + (xd - 5) + ' ' + (padT + dh / 2) + ') rotate(-90)" text-anchor="middle">' + esc(fmt(sh) + um) + '</text>' +
+      '</g>';
+    s += '<rect class="sh" x="' + padL + '" y="' + padT + '" width="' + dw.toFixed(2) + '" height="' + dh.toFixed(2) + '"/>';
+    if (mg > 0) {
+      var m = mg * k;
+      s += '<path class="trim" fill-rule="evenodd" d="M' + padL + ' ' + padT + 'h' + dw.toFixed(2) + 'v' + dh.toFixed(2) + 'h' + (-dw).toFixed(2) + 'z' +
+        'M' + (padL + m).toFixed(2) + ' ' + (padT + m).toFixed(2) + 'v' + (dh - 2 * m).toFixed(2) + 'h' + (dw - 2 * m).toFixed(2) + 'v' + (-(dh - 2 * m)).toFixed(2) + 'z"/>';
+      s += '<rect class="usable" x="' + (padL + m).toFixed(2) + '" y="' + (padT + m).toFixed(2) + '" width="' + (dw - 2 * m).toFixed(2) + '" height="' + (dh - 2 * m).toFixed(2) + '"/>';
+    }
+    for (var i = 0; i < placements.length; i++) {
+      var p = placements[i], gi = rowOf(p), nm = nameOf(gi), c = colorFor(gi);
+      var x = padL + p.x * k, y = padT + p.y * k, w = Math.max(p.w * k, 0.8), hh = Math.max(p.h * k, 0.8);
+      var tip = nm + ' · ' + fmt(p.w) + ' × ' + fmt(p.h) + um + (p.rot ? ' · rotated 90°' : '');
+      s += '<g class="part"><title>' + esc(tip) + '</title><rect x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) + '" height="' + hh.toFixed(2) + '" fill="' + c.fill + '"' +
+        (w > 3 && hh > 3 ? ' stroke="' + c.stroke + '" stroke-width="0.75"' : '') + '/>';
+      var label = nm + (p.rot ? ' ↻' : '');
+      var fs = Math.min(12.5, hh * 0.66, w / (label.length * 0.6 + 0.8));
+      if (fs >= 7) {
+        var dimsTxt = fmt(p.w, 3) + ' × ' + fmt(p.h, 3);
+        var two = hh >= fs * 2.7 && w / (dimsTxt.length * 0.56 + 0.8) >= fs * 0.8;
+        if (two) {
+          s += '<text x="' + (x + w / 2).toFixed(2) + '" y="' + (y + hh / 2 - fs * 0.15).toFixed(2) + '" text-anchor="middle" font-size="' + fs.toFixed(1) + '">' + esc(label) + '</text>' +
+            '<text x="' + (x + w / 2).toFixed(2) + '" y="' + (y + hh / 2 + fs * 1.05).toFixed(2) + '" text-anchor="middle" font-size="' + (fs * 0.82).toFixed(1) + '" font-weight="500">' + esc(dimsTxt) + '</text>';
+        } else {
+          s += '<text x="' + (x + w / 2).toFixed(2) + '" y="' + (y + hh / 2 + fs * 0.35).toFixed(2) + '" text-anchor="middle" font-size="' + fs.toFixed(1) + '">' + esc(label) + '</text>';
+        }
+      }
+      s += '</g>';
+    }
+    s += '</svg>';
+    el.innerHTML = s;
+  }
+  function zoomSeg(z) {
+    return '<div class="seg sm zoom" role="group" aria-label="Zoom">' + [1, 2, 4].map(function (v) {
+      return '<button type="button" data-z="' + v + '" aria-pressed="' + (v === z) + '">' + (v === 1 ? 'Fit' : v + '×') + '</button>';
+    }).join('') + '</div>';
+  }
+  function drawCard(c) { drawSheet(c.el, c.geo, c.sheet.placements, c.rowOf, c.zoom); }
+
+  function renderLayouts(R) {
+    var host = $('#layouts');
+    host.innerHTML = '';
+    cards = [];
+    var limit = showAllLayouts ? Infinity : 30, shown = 0, hidden = 0, offset = 0;
+    var multi = hasMaterial && R.groups.length > 0;
+    var u = R.st.units;
+    R.groups.forEach(function (g) {
+      var rowOf = function (p) { return g.list[p.row].i; };
+      if (multi) {
+        var t = document.createElement('h3');
+        t.className = 'group-title';
+        t.innerHTML = esc(g.material) + ' <span class="pill">' + g.res.sheetCount + ' ' + plural(g.res.sheetCount, 'sheet') + '</span>';
+        host.appendChild(t);
+      }
+      g.res.layouts.forEach(function (L) {
+        if (shown >= limit) { hidden++; return; }
+        var sheet = g.res.sheets[L.first];
+        var a = offset + L.first + 1, b = offset + L.last + 1;
+        var counts = new Map();
+        sheet.placements.forEach(function (p) { var gi = rowOf(p); counts.set(gi, (counts.get(gi) || 0) + 1); });
+        var cut = Array.from(counts.entries()).sort(function (x, y) { return x[0] - y[0]; }).map(function (e) { return esc(nameOf(e[0])) + ' ×' + e[1]; }).join(' · ');
+        var card = document.createElement('article');
+        card.className = 'sheet-card';
+        card.innerHTML = '<header><h3>' + (L.count > 1 ? 'Sheets ' + a + '–' + b : 'Sheet ' + a) + '</h3>' +
+          (L.count > 1 ? '<span class="pill accent">×' + L.count + ' identical</span>' : '') +
+          '<span class="meta">' + fmtPct(sheet.yield) + ' yield · ' + sheet.placements.length + ' pcs</span>' + zoomSeg(1) + '</header>' +
+          '<div class="drawing"></div>' +
+          '<details><summary>' + sheet.placements.length + ' ' + plural(sheet.placements.length, 'part') + ' on ' + (L.count > 1 ? 'each of these sheets' : 'this sheet') + '</summary><p class="cutlist">' + cut + '</p></details>';
+        host.appendChild(card);
+        var c = { card: card, el: card.querySelector('.drawing'), geo: g.res, sheet: sheet, rowOf: rowOf, zoom: 1 };
+        cards.push(c);
+        drawCard(c);
+        shown++;
+      });
+      offset += g.res.sheetCount;
+    });
+    if (hidden) {
+      var more = document.createElement('button');
+      more.type = 'button'; more.className = 'btn ghost more';
+      more.textContent = 'Show ' + hidden + ' more ' + plural(hidden, 'layout');
+      more.addEventListener('click', function () { showAllLayouts = true; renderLayouts(lastResult); });
+      host.appendChild(more);
+    }
+    if (!shown) {
+      host.innerHTML = '<div class="empty">No sheets yet. Add parts with a count above 0 that fit the sheet, and their cut layouts will appear here.</div>';
+    }
+    lastLayoutWidth = host.clientWidth;
+  }
+
+  /* ---------- parts table ---------- */
+  function partCell(i, f, v, mode, label) {
+    return '<td><input id="p' + i + '-' + f + '" data-i="' + i + '" data-f="' + f + '" value="' + esc(v) + '"' +
+      (mode ? ' inputmode="' + mode + '"' : '') + ' autocomplete="off" spellcheck="false" aria-label="' + label + ', row ' + (i + 1) + '"' +
+      (mode ? ' class="r"' : '') + '></td>';
+  }
+  function renderPartsTable() {
+    var mat = hasMaterial;
+    var h = '<colgroup><col class="c-idx"><col><col class="c-qty"><col class="c-dim"><col class="c-dim">' + (mat ? '<col class="c-mat">' : '') + '<col class="c-del"></colgroup>';
+    h += '<thead><tr><th class="num">#</th><th>Panel</th><th class="num">Qty</th><th class="num">Width</th><th class="num">Height</th>' + (mat ? '<th>Material</th>' : '') + '<th><span class="sr">Remove</span></th></tr></thead><tbody>';
+    rows.forEach(function (r, i) {
+      h += '<tr><td class="num idx">' + (i + 1) + '</td>' + partCell(i, 'panel', r.panel, '', 'Panel') + partCell(i, 'count', r.count, 'numeric', 'Count') +
+        partCell(i, 'width', r.width, 'decimal', 'Width') + partCell(i, 'height', r.height, 'decimal', 'Height') +
+        (mat ? partCell(i, 'material', r.material, '', 'Material') : '') +
+        '<td><button type="button" class="del" data-del="' + i + '" aria-label="Remove row ' + (i + 1) + '" title="Remove row">×</button></td></tr>';
+    });
+    h += '</tbody>';
+    $('#partsTable').innerHTML = h;
+    $('#fileName').textContent = fileName;
+    $('#fileName').title = fileName;
+    updatePartsSummary();
+    markRowStates(false);
+  }
+  function updatePartsSummary() {
+    var parsed = parseRows(), pcs = 0, bad = 0;
+    parsed.forEach(function (p) { if (p.issues.length) bad++; else pcs += p.count; });
+    $('#partsSummary').textContent = rows.length + ' ' + plural(rows.length, 'row') + ' · ' + fmtInt(pcs) + ' ' + plural(pcs, 'piece') + (bad ? ' · ' + bad + ' to fix' : '');
+  }
+  function markRowStates(withFit) {
+    var parsed = parseRows();
+    var nofit = new Set();
+    if (withFit && lastResult) lastResult.groups.forEach(function (g) { g.res.parts.forEach(function (info, k) { if (!info.fit) nofit.add(g.list[k].i); }); });
+    var body = $('#partsTable tbody');
+    if (!body) return;
+    var trs = body.rows;
+    parsed.forEach(function (p, i) {
+      var tr = trs[i];
+      if (!tr) return;
+      tr.classList.toggle('bad', p.issues.length > 0);
+      tr.classList.toggle('nofit', !p.issues.length && nofit.has(i));
+      tr.title = p.issues.join(' · ') || (nofit.has(i) ? 'Too big for this sheet' : '');
+      ['count', 'width', 'height'].forEach(function (f) {
+        var inp = tr.querySelector('[data-f="' + f + '"]');
+        if (inp) { inp.classList.toggle('bad', !!p.bad[f]); inp.setAttribute('aria-invalid', p.bad[f] ? 'true' : 'false'); }
+      });
+    });
+  }
+
+  /* ---------- settings UI ---------- */
+  var NUM_IDS = ['sheetW', 'sheetH', 'spacing', 'margin', 'allowW', 'allowH', 'price'];
+  function syncSeg(seg, v) { $$('button[data-v]', seg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === v)); }); }
+  function syncHints() {
+    $('#rotHint').textContent = S.rotation === 'any'
+      ? 'Each part may turn 90° when that saves material. Avoid on directional finishes such as metallic, mica or brushed.'
+      : S.rotation === '90' ? 'Every part turns 90°: the template Width runs along the sheet’s height (Y).'
+        : 'Parts stay as drawn: the template Width runs along the sheet’s width (X).';
+    $('#modeHint').textContent = S.mode === 'free'
+      ? 'Parts can interlock anywhere, as on a CNC router or laser. These layouts may not be cuttable on a shear.'
+      : 'Every cut runs edge to edge, as on a shear or panel saw. Also cuttable on a CNC.';
+    $$('.inp .u:not(.pre)').forEach(function (el) { el.textContent = S.units; });
+    var pre = PRESETS[S.units], h = '<span class="field-label">Common sheets</span>';
+    pre.forEach(function (p) {
+      var on = parseNum(S.sheetW) === p[0] && parseNum(S.sheetH) === p[1];
+      h += '<button type="button" class="chip" data-w="' + p[0] + '" data-h="' + p[1] + '" aria-pressed="' + on + '" title="' + p[0] + ' × ' + p[1] + ' ' + S.units + '">' + p[2] + '</button>';
+    });
+    $('#presets').innerHTML = h;
+    NUM_IDS.forEach(function (id) {
+      var el = $('#' + id), v = id === 'price' || id === 'allowW' || id === 'allowH' || id === 'spacing' || id === 'margin' ? optNum(S[id]) : parseNum(S[id]);
+      var ok = id === 'sheetW' || id === 'sheetH' ? v > 0 : v >= 0;
+      el.closest('.inp').classList.toggle('bad', !ok);
+      el.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    });
+  }
+  function convertUnits(from, to) {
+    var f = from === 'in' && to === 'mm' ? 25.4 : 1 / 25.4, d = to === 'mm' ? 1 : 4;
+    ['sheetW', 'sheetH', 'spacing', 'margin', 'allowW', 'allowH'].forEach(function (id) {
+      var v = parseNum(S[id]);
+      if (isFinite(v)) { S[id] = fmt(v * f, d); $('#' + id).value = S[id]; }
+    });
+  }
+  function bindSettings() {
+    NUM_IDS.forEach(function (id) {
+      var el = $('#' + id);
+      el.value = S[id];
+      el.addEventListener('input', function () { S[id] = el.value; syncHints(); changed(); });
+    });
+    $('#tplUnits').value = S.tplUnits;
+    $('#tplUnits').addEventListener('change', function (e) { S.tplUnits = e.target.value; changed(); });
+    [['#rotSeg', 'rotation'], ['#modeSeg', 'mode'], ['#unitSeg', 'units']].forEach(function (pair) {
+      var seg = $(pair[0]), key = pair[1];
+      syncSeg(seg, S[key]);
+      seg.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-v]');
+        if (!b) return;
+        var v = b.getAttribute('data-v');
+        if (S[key] === v) return;
+        var prev = S[key];
+        S[key] = v;
+        if (key === 'units') convertUnits(prev, v);
+        syncSeg(seg, v); syncHints(); changed();
+      });
+    });
+    $('#presets').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-w]');
+      if (!b) return;
+      S.sheetW = b.getAttribute('data-w'); S.sheetH = b.getAttribute('data-h');
+      $('#sheetW').value = S.sheetW; $('#sheetH').value = S.sheetH;
+      syncHints(); changed();
+    });
+    $('#swapSheet').addEventListener('click', function () {
+      var t = S.sheetW; S.sheetW = S.sheetH; S.sheetH = t;
+      $('#sheetW').value = S.sheetW; $('#sheetH').value = S.sheetH;
+      syncHints(); changed();
+    });
+    syncHints();
+  }
+
+  /* ---------- parts events ---------- */
+  function bindParts() {
+    var table = $('#partsTable');
+    table.addEventListener('input', function (e) {
+      var el = e.target, f = el.getAttribute('data-f');
+      if (!f) return;
+      rows[+el.getAttribute('data-i')][f] = el.value;
+      changed();
+    });
+    table.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-del]');
+      if (!b) return;
+      rows.splice(+b.getAttribute('data-del'), 1);
+      renderPartsTable();
+      changed();
+    });
+    $('#addRow').addEventListener('click', function () {
+      rows.push({ panel: 'P-' + (rows.length + 1), count: '1', width: '', height: '', material: '' });
+      renderPartsTable();
+      var wrap = $('.parts-wrap'); wrap.scrollTop = wrap.scrollHeight;
+      var inp = $('#p' + (rows.length - 1) + '-width'); if (inp) inp.focus();
+      changed();
+    });
+    $('#uploadBtn').addEventListener('click', function () { $('#fileInput').click(); });
+    $('#fileInput').addEventListener('change', function (e) { readFile(e.target.files[0]); e.target.value = ''; });
+    var card = $('#partsCard');
+    ['dragenter', 'dragover'].forEach(function (t) { card.addEventListener(t, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0) { e.preventDefault(); card.classList.add('dragging'); } }); });
+    ['dragleave', 'drop'].forEach(function (t) { card.addEventListener(t, function (e) { if (t === 'dragleave' && card.contains(e.relatedTarget)) return; card.classList.remove('dragging'); }); });
+    card.addEventListener('drop', function (e) { e.preventDefault(); if (e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+    document.addEventListener('paste', function (e) {
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      var text = e.clipboardData && e.clipboardData.getData('text/plain');
+      if (!text || !/[\t,;\n]/.test(text)) return;
+      var table = parseDelimited(text);
+      var r = tableToRows(table);
+      if (r.error) { toast('Pasted text didn’t look like a parts list. Copy the header row (Panel, Count, Width, Height) with the data.'); return; }
+      e.preventDefault();
+      rows = r.rows; hasMaterial = r.hasMaterial; fileName = 'Pasted rows';
+      renderPartsTable(); changed(true);
+      toast('Loaded ' + rows.length + ' pasted ' + plural(rows.length, 'row') + '.');
+    });
+  }
+
+  /* ---------- results events: zoom, view, copy, export ---------- */
+  var lastLayoutWidth = 0;
+  function bindResults() {
+    $('#layouts').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-z]');
+      if (!b) return;
+      var cardEl = b.closest('.sheet-card');
+      var c = cards.filter(function (x) { return x.card === cardEl; })[0];
+      if (!c) return;
+      c.zoom = +b.getAttribute('data-z');
+      $$('button[data-z]', cardEl).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      drawCard(c);
+    });
+    $('#panelTable').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-view]');
+      if (b) openPanel(+b.getAttribute('data-view'), b);
+    });
+    var ro = new ResizeObserver(function () {
+      var w = $('#layouts').clientWidth;
+      if (Math.abs(w - lastLayoutWidth) < 2) return;
+      lastLayoutWidth = w;
+      clearTimeout(ro.t);
+      ro.t = setTimeout(function () { cards.forEach(drawCard); if (!$('#modal').hidden && modalState) drawModal(); }, 120);
+    });
+    ro.observe($('#layouts'));
+    $('#copyPanels').addEventListener('click', function () { copyText(panelTSV(), 'Fit-per-sheet table copied. Paste it into Excel.'); });
+    $('#copyCut').addEventListener('click', function () { copyText(cutTSV(), 'Cut list copied. Paste it into Excel.'); });
+    $('#xlsxBtn').addEventListener('click', exportXlsx);
+    $('#tplBtn').addEventListener('click', function () {
+      saveFile('Nesting template.csv', '﻿Panel,Count,Width,Height,Material\r\n');
+    });
+    $('#modalClose').addEventListener('click', closeModal);
+    $('#modal').addEventListener('click', function (e) { if (e.target === $('#modal')) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+    $('#modalZoom').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-z]');
+      if (!b || !modalState) return;
+      modalState.zoom = +b.getAttribute('data-z');
+      syncZoom();
+      drawModal();
+    });
+  }
+  var modalState = null, modalReturn = null;
+  function syncZoom() { $$('#modalZoom button').forEach(function (x) { x.setAttribute('aria-pressed', String(+x.getAttribute('data-z') === modalState.zoom)); }); }
+  function openPanel(i, from) {
+    if (!lastResult) return;
+    var e = infoMap(lastResult).get(i);
+    if (!e || !e.info.fit) return;
+    var st = lastResult.st, p = lastResult.parsed[i], inf = e.info;
+    modalState = { i: i, geo: e.g.res, placements: inf.capLayout.map(function (q) { return { x: q.x, y: q.y, w: q.w, h: q.h, rot: q.rot }; }), zoom: 1 };
+    modalReturn = from || null;
+    $('#modalTitle').textContent = p.name + ' alone on a sheet';
+    $('#modalMeta').innerHTML = '<b>' + fmtInt(inf.cap) + ' per sheet</b> · ' + fmt(p.w + st.allowW) + ' × ' + fmt(p.h + st.allowH) + ' ' + st.units + ' · ' + rotLabel(st.rotation) +
+      ' · ' + modeLabel(st.mode) + ' · qty ' + fmtInt(p.count) + ' needs ' + fmtInt(inf.sheetsAlone) + ' ' + plural(inf.sheetsAlone, 'sheet') + ' on its own' +
+      (inf.n0 && inf.n90 ? ' · ' + inf.n0 + ' as drawn + ' + inf.n90 + ' rotated' : '');
+    $('#modal').hidden = false;
+    syncZoom();
+    drawModal();
+    $('#modalClose').focus();
+  }
+  function drawModal() {
+    var i = modalState.i;
+    drawSheet($('#modalDrawing'), modalState.geo, modalState.placements, function () { return i; }, modalState.zoom);
+  }
+  function closeModal() {
+    $('#modal').hidden = true;
+    modalState = null;
+    if (modalReturn && modalReturn.focus) modalReturn.focus();
+  }
+
+  function tsv(rowsArr) { return rowsArr.map(function (r) { return r.map(function (c) { return String(c == null ? '' : c).replace(/[\t\r\n]+/g, ' '); }).join('\t'); }).join('\r\n'); }
+  function panelRows() {
+    var R = lastResult, st = R.st, map = infoMap(R), out = [];
+    out.push(['Panel'].concat(hasMaterial ? ['Material'] : [], ['Count', 'Width (' + st.units + ')', 'Height (' + st.units + ')', 'Fits per sheet', 'As drawn', 'Rotated', 'Sheets if alone', 'Status']));
+    R.parsed.forEach(function (p) {
+      var e = map.get(p.i), status;
+      if (p.issues.length) status = 'Skipped: ' + p.issues.join(', ');
+      else if (p.count === 0) status = 'Qty 0';
+      else if (e && e.info.fit) status = 'Nested';
+      else status = e && e.info.fitsIfRotated ? 'Too big as drawn; fits if rotated' : 'Too big for sheet';
+      var fit = e && e.info.fit;
+      out.push([p.name].concat(hasMaterial ? [p.material] : [], [isFinite(p.count) ? p.count : '', isFinite(p.w) ? +fmt(p.w + st.allowW) : '', isFinite(p.h) ? +fmt(p.h + st.allowH) : '',
+        fit ? e.info.cap : '', fit ? e.info.n0 : '', fit ? e.info.n90 : '', fit ? e.info.sheetsAlone : '', status]));
+    });
+    return out;
+  }
+  function cutRows(withXY) {
+    var R = lastResult, st = R.st, out = [], offset = 0;
+    out.push(withXY
+      ? ['Sheet'].concat(hasMaterial ? ['Material'] : [], ['Panel', 'X (' + st.units + ')', 'Y (' + st.units + ')', 'Width (' + st.units + ')', 'Height (' + st.units + ')', 'Rotated'])
+      : ['Sheet'].concat(hasMaterial ? ['Material'] : [], ['Panel', 'Qty on sheet', 'Width (' + st.units + ')', 'Height (' + st.units + ')', 'Rotated']));
+    R.groups.forEach(function (g) {
+      g.res.sheets.forEach(function (sh, si) {
+        var n = offset + si + 1;
+        if (withXY) {
+          sh.placements.forEach(function (p) {
+            out.push([n].concat(hasMaterial ? [g.material] : [], [g.list[p.row].name, +fmt(p.x), +fmt(p.y), +fmt(p.w), +fmt(p.h), p.rot ? 'Yes' : 'No']));
+          });
+        } else {
+          var agg = new Map();
+          sh.placements.forEach(function (p) {
+            var key = p.row + '|' + p.rot;
+            var a = agg.get(key) || { p: p, n: 0 };
+            a.n++; agg.set(key, a);
+          });
+          Array.from(agg.values()).sort(function (a, b) { return a.p.row - b.p.row; }).forEach(function (a) {
+            out.push([n].concat(hasMaterial ? [g.material] : [], [g.list[a.p.row].name, a.n, +fmt(a.p.w), +fmt(a.p.h), a.p.rot ? 'Yes' : 'No']));
+          });
+        }
+      });
+      offset += g.res.sheetCount;
+    });
+    return out;
+  }
+  function panelTSV() { return lastResult ? tsv(panelRows()) : ''; }
+  function cutTSV() { return lastResult ? tsv(cutRows(false)) : ''; }
+  function copyText(text, okMsg) {
+    if (!text) { toast('Nothing to copy yet.'); return; }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      toast(ok ? okMsg : 'Copy isn’t allowed here. Use Download Excel instead.');
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () { toast(okMsg); }, fallback);
+    } catch (e) { fallback(); }
+  }
+  function mimeFor(name) {
+    return /\.xlsx$/i.test(name) ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : /\.csv$/i.test(name) ? 'text/csv' : 'application/octet-stream';
+  }
+  function anchorSave(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    toast('Downloaded ' + name + '.');
+  }
+  // Hosted outside Claude (GitHub Pages): plain browser download; on iPhone/iPad the share sheet ("Save to Files") when available.
+  function nativeSave(name, data) {
+    var type = mimeFor(name);
+    var blob = new Blob([data], { type: type });
+    var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios && navigator.canShare && navigator.share && typeof File === 'function') {
+      try {
+        var file = new File([blob], name, { type: type });
+        if (navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: name }).then(function () {}, function (err) {
+            if (err && err.name === 'AbortError') return;
+            anchorSave(blob, name);
+          });
+        }
+      } catch (e) { /* fall through to a normal download */ }
+    }
+    anchorSave(blob, name);
+    return Promise.resolve();
+  }
+  function saveFile(name, data) {
+    if (!IN_CLAUDE) return nativeSave(name, data);
+    if (!downloads) { toast('Downloads aren’t available in this view.'); return Promise.resolve(); }
+    return downloads.save({ filename: name, data: data }).then(function () { toast('Saved ' + name + '.'); }, function (err) {
+      var code = err && err.code;
+      if (code === 'declined') return;
+      if (code === 'rate_limited') { toast('A download prompt is already open.'); return; }
+      toast('That download didn’t go through.');
+    });
+  }
+  function exportXlsx() {
+    if (!lastResult) return;
+    var btn = $('#xlsxBtn');
+    btn.disabled = true;
+    getXLSX().then(function (XLSX) {
+      var R = lastResult, st = R.st, T = totalsOf(R);
+      var summary = [
+        ['Nesting App results'],
+        ['Parts file', R.fileName],
+        ['Created', new Date().toLocaleString()],
+        [],
+        ['Sheet width (X)', st.sheetW, st.units],
+        ['Sheet height (Y)', st.sheetH, st.units],
+        ['Rotation', rotLabel(st.rotation)],
+        ['Part spacing', st.spacing, st.units],
+        ['Sheet spacing (each edge)', st.margin, st.units],
+        ['Cut method', modeLabel(st.mode)],
+        ['Template values in', R.tplUnits],
+        ['Added to part width', st.allowW, st.units],
+        ['Added to part height', st.allowH, st.units],
+        [],
+        ['Sheets needed', T.sheets],
+        ['Lower bound (no layout can use fewer)', T.lb],
+        ['Sheets if each panel is cut separately', T.separate],
+        ['Pieces nested', T.nested],
+        ['Pieces that don’t fit the sheet', T.notFit],
+        ['Rows skipped (bad data)', T.invalid.length],
+        ['Yield', +(T.yield * 100).toFixed(1), '%']
+      ];
+      if (st.price > 0) summary.push(['Price per sheet', st.price, '$'], ['Material cost', +(T.sheets * st.price).toFixed(2), '$']);
+      if (hasMaterial) {
+        summary.push([], ['Material', 'Pieces', 'Sheets', 'Yield %']);
+        R.groups.forEach(function (g) { summary.push([g.material, g.res.nested, g.res.sheetCount, +(g.res.yield * 100).toFixed(1)]); });
+      }
+      var wb = XLSX.utils.book_new();
+      function add(name, aoa, widths) {
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+        if (widths) ws['!cols'] = widths.map(function (w) { return { wch: w }; });
+        XLSX.utils.book_append_sheet(wb, ws, name);
+      }
+      add('Summary', summary, [38, 22, 6]);
+      add('Fit per sheet', panelRows(), [16, 10, 12, 12, 14, 10, 10, 14, 30]);
+      add('Cut list', cutRows(false), [8, 16, 12, 12, 12, 9]);
+      add('Positions', cutRows(true), [8, 16, 10, 10, 12, 12, 9]);
+      var buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      var base = String(R.fileName || 'Nesting').replace(/\.[^.]+$/, '').replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'Nesting';
+      return saveFile(base + ' - nesting results.xlsx', new Blob([buf]));
+    }).catch(function () {
+      toast('Couldn’t build the Excel file here. Use Copy cut list instead.');
+    }).then(function () { btn.disabled = false; });
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 3200);
+  }
+
+  /* ---------- downloads capability ---------- */
+  function initDownloads() {
+    if (!IN_CLAUDE) {
+      $('#xlsxBtn').hidden = false;
+      $('#tplBtn').hidden = false;
+      // load the Excel writer ahead of time so a tap on Download Excel saves right away
+      setTimeout(function () { getXLSX().catch(function () {}); }, 1500);
+      return;
+    }
+    try {
+      window.claude.use('downloads').then(function (ns) {
+        downloads = ns || null;
+        $('#xlsxBtn').hidden = !downloads;
+        $('#tplBtn').hidden = !downloads;
+      }, function () { downloads = null; });
+    } catch (e) { downloads = null; }
+  }
+
+  /* ---------- boot ---------- */
+  loadState();
+  bindSettings();
+  bindParts();
+  bindResults();
+  renderPartsTable();
+  initDownloads();
+  schedule(0);
+})();
+</script>
+</body>
+</html>
